@@ -1,5 +1,6 @@
 defmodule Neopixel do
   require Logger
+  require Gpio
 
   # Trigger file for LED0
   @led_trigger "/sys/class/leds/led0/trigger"
@@ -11,25 +12,29 @@ defmodule Neopixel do
     # Setting the trigger to 'none' by default its 'mmc0'
     File.write(@led_trigger, "none")
 
+    {:ok, pid} = Gpio.start_link(4, :output)
+
     # Start blinking forever
-    blink_forever
+    blink_forever(pid)
   end
 
-  def blink_forever do
+  def blink_forever(pid) do
     # Turn on the green LED and sleep for 1000ms
     Logger.debug "Turning ON green"
     set_led(true)
+    Gpio.write(pid, 1)
 
     :timer.sleep 1000
 
     # Turn off the green LED and sleep for 1000ms
     Logger.debug "Turning OFF green"
     set_led(false)
+    Gpio.write(pid, 0)
 
     :timer.sleep 1000
 
     # Blink again
-    blink_forever
+    blink_forever(pid)
   end
 
   # Setting the brightness to 1 in case of true and 0 if false

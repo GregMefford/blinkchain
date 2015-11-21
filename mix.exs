@@ -29,7 +29,8 @@ defmodule Neopixel.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      { :exrm, "~> 0.15.0" }
+      { :exrm, "~> 0.15.0" },
+      { :elixir_ale, "~> 0.3.0" }
     ]
   end
 end
