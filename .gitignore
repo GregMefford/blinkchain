@@ -1,0 +1,8 @@
+/_build
+/cover
+/deps
+erl_crash.dump
+*.ez
+_images
+rel/nerves_system_libs
+rel/blinky
