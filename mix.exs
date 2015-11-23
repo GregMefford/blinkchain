@@ -16,6 +16,7 @@ defmodule Neopixel.Mixfile do
   def application do
     [applications: [:logger],
      mod: {Neopixel, []}]
+     #mod: {Elixir.IEx, []}]
   end
 
   # Dependencies can be Hex packages:
