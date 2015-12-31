@@ -1,37 +1,32 @@
-defmodule Neopixel.Mixfile do
+defmodule Mix.Tasks.Compile.Ws281x do
+  def run(_) do
+    0 = Mix.Shell.IO.cmd("make priv/rpi_ws281x")
+    Mix.Project.build_structure
+    :ok
+  end
+end
+
+defmodule Nerves.IO.Neopixel.Mixfile do
   use Mix.Project
 
-  def project do
-    [app: :neopixel,
-     version: "0.0.1",
-     elixir: "~> 1.0",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps]
-  end
+  def project, do: [
+    app: :nerves_io_neopixel,
+    version: "0.0.1",
+    elixir: "~> 1.0",
+    name: "Nerves.IO.Neopixel",
+    compilers: [:Ws281x, :elixir, :app],
+    build_embedded: Mix.env == :prod,
+    start_permanent: Mix.env == :prod,
+    deps: deps
+  ]
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
-  def application do
-    [applications: [:logger, :elixir_ale],
-     mod: {Neopixel, []}]
-     #mod: {Elixir.IEx, []}]
-  end
+  def application, do: [
+    applications: [:logger],
+    mod: {Nerves.IO.Neopixel, []}
+  ]
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
-  defp deps do
-    [
-      { :exrm, "~> 0.15.0" },
-      { :elixir_ale, "~> 0.3.0" }
-    ]
-  end
+  defp deps, do: [
+    { :exrm, "~> 0.15.0" }
+  ]
+
 end
