@@ -18,16 +18,16 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  uint8_t pin = atoi(argv[1]);
-  uint32_t count = strtol(argv[2], NULL, 10);
+  uint8_t gpio_pin = atoi(argv[1]);
+  uint32_t led_count = strtol(argv[2], NULL, 10);
 
   ws2811_t ledstring = {
     .freq = WS2811_TARGET_FREQ,
     .dmanum = DMA_CHANNEL,
     .channel = {
       [0] = {
-        .gpionum = pin,
-        .count = count,
+        .gpionum = gpio_pin,
+        .count = led_count,
         .invert = 0,
         .brightness = 255,
       },
@@ -44,24 +44,22 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  uint8_t counter = 0;
+  freopen(NULL, "rb", stdin);
 
-  ws2811_led_t leds[] = { 0xff0000, 0x00ff00, 0x0000ff };
+  uint32_t leds_read;
+  uint8_t colors[] = {0, 0, 0};
 
   while (1) {
-    int i;
-    for (i = 0; i < count-3; i+=3) {
-      ledstring.channel[0].leds[i+0] = leds[0+(counter%3)];
-      ledstring.channel[0].leds[i+1] = leds[1+(counter%3)];
-      ledstring.channel[0].leds[i+2] = leds[2+(counter%3)];
+    ws2811_led_t *ptr = ledstring.channel[0].leds;
+
+    for(leds_read = 0; leds_read < led_count; leds_read++, ptr++) {
+      fread(colors, 3 * sizeof(uint8_t), 1, stdin);
+      *ptr = (uint32_t)(colors[0] << 16 | colors[1] << 8 | colors[2]);
     }
-    counter++;
 
     if (ws2811_render(&ledstring)) {
       break;
     }
-
-    usleep(1000000);
   }
 
   ws2811_fini(&ledstring);
