@@ -12,11 +12,13 @@ defmodule Nerves.IO.Neopixel.Mixfile do
   def project, do: [
     app: :nerves_io_neopixel,
     version: "0.1.0",
+    description: "Drive WS2812B \"NeoPixel\" RGB LED strips from a Raspberry Pi using Elixir.",
     elixir: "~> 1.0",
     name: "Nerves.IO.Neopixel",
     compilers: [:Ws281x, :elixir, :app],
     build_embedded: Mix.env == :prod,
     start_permanent: Mix.env == :prod,
+    package: package,
     deps: deps
   ]
 
@@ -29,4 +31,11 @@ defmodule Nerves.IO.Neopixel.Mixfile do
     { :exrm, "~> 0.15.0" }
   ]
 
+  defp package, do: [
+    files: ["lib", "src", "config", "rel", "mix.exs", "README*", "LICENSE*", "Makefile"],
+    maintainers: ["Greg Mefford"],
+    licenses: ["MIT", "BSD 2-Clause"],
+    links: %{"GitHub" => "https://github.com/GregMefford/nerves_io_neopixel"}
+  ]
+  
 end
