@@ -32,7 +32,7 @@ Once you had a `pid` from the `setup` function, you can call the `Nerves.IO.Neop
 
 Here's a simple example:
 
-``` elixir example.exs
+``` elixir
 alias Nerves.IO.Neopixel
 {:ok, pid} = Neopixel.setup pin: 18, count: 3
 Neopixel.render(
