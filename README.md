@@ -2,6 +2,8 @@
 
 Drive WS2812B "NeoPixel" RGB LED strips from a Raspberry Pi using Elixir!
 
+![NeoPixel strip driven by a Raspberry Pi](nerves_neopixel_rgb.jpg)
+
 This project was designed to make it easy to drive a string of AdaFruit NeoPixels from a Raspberry Pi using [Nerves](http://nerves-project.org).
 The code would probably also work outside of Nerves with minor modifications to the Makefile, if you so desire.
 
