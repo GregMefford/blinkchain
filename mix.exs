@@ -11,7 +11,7 @@ defmodule Nerves.IO.Neopixel.Mixfile do
 
   def project, do: [
     app: :nerves_io_neopixel,
-    version: "0.0.1",
+    version: "0.1.0",
     elixir: "~> 1.0",
     name: "Nerves.IO.Neopixel",
     compilers: [:Ws281x, :elixir, :app],
