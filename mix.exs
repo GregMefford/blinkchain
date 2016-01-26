@@ -31,7 +31,7 @@ defmodule Nerves.IO.Neopixel.Mixfile do
   ]
 
   defp package, do: [
-    files: ["lib", "src", "config", "rel", "mix.exs", "README*", "LICENSE*", "Makefile"],
+    files: ["lib", "src", "config", "mix.exs", "README*", "LICENSE*", "Makefile"],
     maintainers: ["Greg Mefford"],
     licenses: ["MIT", "BSD 2-Clause"],
     links: %{"GitHub" => "https://github.com/GregMefford/nerves_io_neopixel"}
