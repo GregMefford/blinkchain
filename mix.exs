@@ -28,7 +28,6 @@ defmodule Nerves.IO.Neopixel.Mixfile do
   ]
 
   defp deps, do: [
-    { :exrm, "~> 0.15.0" }
   ]
 
   defp package, do: [
