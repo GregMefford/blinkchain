@@ -11,7 +11,7 @@ defmodule Nerves.IO.Neopixel.Mixfile do
 
   def project, do: [
     app: :nerves_io_neopixel,
-    version: "0.1.0",
+    version: "0.2.0",
     description: "Drive WS2812B \"NeoPixel\" RGB LED strips from a Raspberry Pi using Elixir.",
     elixir: "~> 1.0",
     name: "Nerves.IO.Neopixel",
