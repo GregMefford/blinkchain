@@ -13,8 +13,12 @@ defmodule Nerves.Neopixel do
   end
 
   # render()
-  def render({_, _} = channel1, channel2 \\ {0, [{0, 0, 0}]}) do
-    GenServer.call(__MODULE__, {:render, channel1, channel2})
+  def render({_, _} = data) do
+    render(0, data)
+  end
+
+  def render(channel, {_, _} = data) do
+    GenServer.call(__MODULE__, {:render, channel, data})
   end
 
   def init([ch1, ch2]) do
@@ -39,12 +43,10 @@ defmodule Nerves.Neopixel do
     }}
   end
 
-  def handle_call({:render, {ch1_b, ch1_data}, {ch2_b, ch2_data}}, _from, s) do
-    ch1_data = ws2811_brg(ch1_data)
-    ch2_data = ws2811_brg(ch2_data)
+  def handle_call({:render, channel, {brightness, data}}, _from, s) do
+    data = ws2811_brg(data)
     payload =
-      {{ch1_b, ch1_data}, {ch2_b, ch2_data}}
-      |> IO.inspect
+      {channel, {brightness, data}}
       |> :erlang.term_to_binary
     send s.port, {self, {:command, payload}}
     {:reply, :ok, s}

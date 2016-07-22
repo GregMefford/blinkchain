@@ -18,7 +18,7 @@
 
 /*
   Receive from Erlang a list of tuples
-  {{channel1}, {channel2}}
+  {channel, {brightness, data}}
   Each tuple contains
   {brightness, led_data}
 */
@@ -35,27 +35,25 @@ static void led_handle_request(const char *req, void *cookie) {
           arity != 2)
     errx(EXIT_FAILURE, "expecting {{channel1}, {channel2}} tuple");
 
-  ws2811_channel_t *channels = ledstring->channel;
 
-  for (int i = 0; i < 2; i++) {
-    debug("Decode Channel");
+  unsigned int ch_num;
+  ei_decode_long(req, &req_index, (long int *) &ch_num);
 
-    int arity;
-    if (ei_decode_tuple_header(req, &req_index, &arity) < 0 ||
-            arity != 2)
-      errx(EXIT_FAILURE, "expecting {brightness, led_data} tuple");
+  ws2811_channel_t *channel = &ledstring->channel[ch_num];
 
-    unsigned int brightness;
-    if (ei_decode_long(req, &req_index, (long int *) &brightness) < 0 ||
-      brightness > 255)
-      errx(EXIT_FAILURE, "brightness: min=0, max=255");
+  if (ei_decode_tuple_header(req, &req_index, &arity) < 0 ||
+          arity != 2)
+    errx(EXIT_FAILURE, "expecting {brightness, led_data} tuple");
 
-    channels[i].brightness = brightness;
+  unsigned int brightness;
+  if (ei_decode_long(req, &req_index, (long int *) &brightness) < 0 ||
+    brightness > 255)
+    errx(EXIT_FAILURE, "brightness: min=0, max=255");
 
-    long int led_data_len = (4 * channels[i].count);
-    ei_decode_binary(req, &req_index, channels[i].leds, &led_data_len);
+  channel->brightness = brightness;
 
-  }
+  long int led_data_len = (4 * channel->count);
+  ei_decode_binary(req, &req_index, channel->leds, &led_data_len);
 
   if (ws2811_render(ledstring)) {
     errx(EXIT_FAILURE, "Failed to render");
