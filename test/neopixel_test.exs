@@ -1,4 +1,4 @@
-defmodule Nerves.IO.Neopixel.Test do
+defmodule Nerves.Neopixel.Test do
 
   use ExUnit.Case
   doctest Nerves.IO.Neopixel
