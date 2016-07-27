@@ -32,7 +32,7 @@ defmodule Nerves.Neopixel do
     ch2_count = (ch2[:count] || 0)
     |> to_string
 
-    executable = "#{:code.priv_dir(:nerves_io_neopixel)}/rpi_ws281x"
+    executable = "#{:code.priv_dir(:nerves_neopixel)}/rpi_ws281x"
     port = Port.open({:spawn_executable, executable},
       [{:args, [ch1_pin, ch1_count, ch2_pin, ch2_count]},
         {:packet, 2},
