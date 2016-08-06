@@ -1,40 +1,31 @@
-defmodule Mix.Tasks.Compile.Ws281x do
-  def run(_) do
-    0 = Mix.Shell.IO.cmd("make priv/rpi_ws281x")
-    Mix.Project.build_structure
-    :ok
-  end
-end
-
-defmodule Nerves.IO.Neopixel.Mixfile do
+defmodule Nerves.Neopixel.Mixfile do
   use Mix.Project
 
-  def project, do: [
-    app: :nerves_io_neopixel,
-    version: "0.2.0",
+  def project do
+   [app: :nerves_neopixel,
+    version: "0.3.0",
     description: "Drive WS2812B \"NeoPixel\" RGB LED strips from a Raspberry Pi using Elixir.",
-    elixir: "~> 1.0",
-    name: "Nerves.IO.Neopixel",
-    compilers: [:Ws281x, :elixir, :app],
+    elixir: "~> 1.3",
+    make_clean: ["clean"],
+    compilers: [:elixir_make | Mix.compilers],
     build_embedded: Mix.env == :prod,
     start_permanent: Mix.env == :prod,
     package: package,
-    deps: deps
-  ]
+    deps: deps]
+  end
 
-  def application, do: [
-    applications: [:logger],
-    mod: {Nerves.IO.Neopixel, []}
-  ]
+  def application do
+   [applications: [:logger]]
+  end
 
-  defp deps, do: [
-  ]
+  defp deps do
+    [{:elixir_make, "~> 0.3.0"}]
+  end
 
-  defp package, do: [
-    files: ["lib", "src", "config", "mix.exs", "README*", "LICENSE*", "Makefile"],
+  defp package do
+   [files: ["lib", "src", "config", "mix.exs", "README*", "LICENSE*", "Makefile"],
     maintainers: ["Greg Mefford"],
     licenses: ["MIT", "BSD 2-Clause"],
-    links: %{"GitHub" => "https://github.com/GregMefford/nerves_io_neopixel"}
-  ]
-  
+    links: %{"GitHub" => "https://github.com/GregMefford/nerves_neopixel"}]
+  end
 end
