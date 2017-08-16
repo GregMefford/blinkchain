@@ -48,7 +48,7 @@ defmodule Nerves.Neopixel do
     payload =
       {channel, {brightness, data}}
       |> :erlang.term_to_binary
-    send s.port, {self, {:command, payload}}
+    send s.port, {self(), {:command, payload}}
     {:reply, :ok, s}
   end
 
