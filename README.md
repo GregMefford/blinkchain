@@ -15,7 +15,7 @@ You can read more about this in [my blog post about the project](http://www.greg
   1. Add it to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:nerves_neopixel, "~> 0.1.0"}]
+          [{:nerves_neopixel, "~> 0.3.0", github: "GregMefford/nerves_neopixel", submodules: true}]
         end
 
   2. Ensure it is started before your application:
