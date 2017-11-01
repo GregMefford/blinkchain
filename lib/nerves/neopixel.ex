@@ -4,6 +4,11 @@ defmodule Nerves.Neopixel do
   use GenServer
   require Logger
 
+  # Calculate this at runtime.
+  defp executable_path do
+    "#{:code.priv_dir(:nerves_neopixel)}/rpi_ws281x"
+  end
+
   def start_link(channel1, channel2 \\ [pin: 0, count: 0]) do
     GenServer.start_link(__MODULE__, [channel1, channel2], [name: __MODULE__])
   end
@@ -32,11 +37,12 @@ defmodule Nerves.Neopixel do
     ch2_count = (ch2[:count] || 0)
     |> to_string
 
-    executable = "#{:code.priv_dir(:nerves_neopixel)}/rpi_ws281x"
-    port = Port.open({:spawn_executable, executable},
+
+    port = Port.open({:spawn_executable, executable_path},
       [{:args, [ch1_pin, ch1_count, ch2_pin, ch2_count]},
         {:packet, 2},
         :use_stdio,
+        :exit_status, # make sure that we're notified when the rpi handler process dies
         :binary])
     {:ok, %{
       port: port
@@ -50,6 +56,11 @@ defmodule Nerves.Neopixel do
       |> :erlang.term_to_binary
     send s.port, {self(), {:command, payload}}
     {:reply, :ok, s}
+  end
+
+  # properly handle rpi_ws281x process death
+  def handle_info {_port, {:exit_status, exit_status}}, state do
+    {:stop, "#{executable_path} OS process died with status: #{exit_status}", state}
   end
 
   defp ws2811_brg(data) when is_list(data) do
