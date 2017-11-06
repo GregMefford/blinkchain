@@ -29,7 +29,7 @@ CFLAGS += -DDEBUG
 CC ?= $(CROSSCOMPILER)gcc
 
 SRC = $(wildcard src/*.c) src/rpi_ws281x/dma.c src/rpi_ws281x/mailbox.c \
-  src/rpi_ws281x/mailbox.c src/rpi_ws281x/pwm.c src/rpi_ws281x/rpihw.c \
+  src/rpi_ws281x/mailbox.c src/rpi_ws281x/pwm.c src/rpi_ws281x/pcm.c src/rpi_ws281x/rpihw.c \
 	src/rpi_ws281x/ws2811.c
 
 OBJ = $(SRC:.c=.o)
