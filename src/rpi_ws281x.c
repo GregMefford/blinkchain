@@ -55,9 +55,9 @@ static void led_handle_request(const char *req, void *cookie) {
   long int led_data_len = (4 * channel->count);
   ei_decode_binary(req, &req_index, channel->leds, &led_data_len);
 
-  if (ws2811_render(ledstring)) {
-    errx(EXIT_FAILURE, "Failed to render");
-  }
+  ws2811_return_t rc = ws2811_render(ledstring);
+  if (rc != WS2811_SUCCESS)
+    errx(EXIT_FAILURE, "ws2811_render failed: %d (%s)", rc, ws2811_get_return_t_str(rc));
 }
 
 int main(int argc, char *argv[]) {
@@ -94,9 +94,9 @@ int main(int argc, char *argv[]) {
     },
   };
 
-  if (ws2811_init(&ledstring)) {
-    exit(EXIT_FAILURE);
-  }
+  ws2811_return_t rc = ws2811_init(&ledstring);
+  if (rc != WS2811_SUCCESS)
+    errx(EXIT_FAILURE, "ws2811_init failed: %d (%s)", rc, ws2811_get_return_t_str(rc));
 
   struct erlcmd handler;
   erlcmd_init(&handler, led_handle_request, &ledstring);
