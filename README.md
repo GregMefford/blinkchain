@@ -16,19 +16,11 @@ project](http://www.gregmefford.com/blog/2016/01/22/driving-neopixels-with-elixi
 
 ## Installation
 
-1.  Add it to your list of dependencies in `mix.exs`:
+Add it to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
       [{:nerves_neopixel, "~> 0.3.1"}]
-    end
-    ```
-
-2. Ensure it is started before your application:
-
-    ```elixir
-    def application do
-      [applications: [:nerves_neopixel]]
     end
     ```
 
