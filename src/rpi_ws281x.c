@@ -61,10 +61,8 @@ static void led_handle_request(const char *req, void *cookie) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 5) {
-    fprintf(stderr, "Usage: %s <Channel 1 GPIO Pin> <Channel 1 LED Count> <Channel 2 GPIO Pin> <Channel 2 LED Count>\n", argv[0]);
-    exit(EXIT_FAILURE);
-  }
+  if (argc != 5)
+    errx(EXIT_FAILURE, "Usage: %s <Channel 1 GPIO Pin> <Channel 1 LED Count> <Channel 2 GPIO Pin> <Channel 2 LED Count>", argv[0]);
 
   uint8_t gpio_pin1 = atoi(argv[1]);
   uint32_t led_count1 = strtol(argv[2], NULL, 10);
