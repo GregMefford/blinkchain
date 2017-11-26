@@ -24,6 +24,14 @@ Add it to your list of dependencies in `mix.exs`:
     end
     ```
 
+If you've cloned the `nerves_neopixel` repository, be sure to check out the
+`rpi_ws281x` submodule:
+
+```sh
+$ git submodule init
+$ git submodule update
+```
+
 ## Usage
 
 Supervision trees and an Elixir `Port` are used to maintain fault-tolerance when
