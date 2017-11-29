@@ -1,70 +1,45 @@
 defmodule Nerves.Neopixel do
-  @moduledoc false
+  alias Nerves.Neopixel.HAL
 
-  use GenServer
   require Logger
 
-  def start_link(channel1, channel2 \\ [pin: 0, count: 0]) do
-    GenServer.start_link(__MODULE__, [channel1, channel2], [name: __MODULE__])
+  @moduledoc """
+  # `Nerves.Neopixel`
+  """
+
+  def set_brightness(channel, brightness) do
+    GenServer.cast(HAL, {:set_brightness, channel, brightness})
   end
 
-  def stop() do
-    GenServer.stop(__MODULE__)
+  def set_gamma(channel, gamma) do
+    GenServer.cast(HAL, {:set_gamma, channel, gamma})
   end
 
-  # render()
-  def render({_, _} = data) do
-    render(0, data)
+  def set_pixel({x, y}, {r, g, b}) do
+    GenServer.cast(HAL, {:set_pixel, {x, y}, {r, g, b, 0}})
+  end
+  def set_pixel({x, y}, {r, g, b, w}) do
+    GenServer.cast(HAL, {:set_pixel, {x, y}, {r, g, b, w}})
   end
 
-  def render(channel, {_, _} = data) do
-    GenServer.call(__MODULE__, {:render, channel, data})
+  def fill({x, y}, width, height, {r, g, b}) do
+    GenServer.cast(HAL, {:fill, {x, y}, width, height, {r, g, b, 0}})
+  end
+  def fill({x, y}, width, height, {r, g, b, w}) do
+    GenServer.cast(HAL, {:fill, {x, y}, width, height, {r, g, b, w}})
   end
 
-  def init([ch1, ch2]) do
-    ch1_pin = (ch1[:pin] || raise "Must pass pin for channel 1")
-    |> to_string
-    ch1_count = (ch1[:count] || raise "Must pass count for channel 1")
-    |> to_string
-
-    ch2_pin = (ch2[:pin] || 0)
-    |> to_string
-    ch2_count = (ch2[:count] || 0)
-    |> to_string
-
-
-    port = Port.open({:spawn_executable, rpi_ws281x_path()},
-      [{:args, [ch1_pin, ch1_count, ch2_pin, ch2_count]},
-        {:packet, 2},
-        :use_stdio,
-        :exit_status,
-        :binary])
-    {:ok, %{
-      port: port
-    }}
+  def copy({xs, ys}, {xd, yd}, width, height) do
+    GenServer.cast(HAL, {:copy, {xs, ys}, {xd, yd}, width, height})
   end
 
-  def handle_call({:render, channel, {brightness, data}}, _from, s) do
-    data = ws2811_brg(data)
-    payload =
-      {channel, {brightness, data}}
-      |> :erlang.term_to_binary
-    send s.port, {self(), {:command, payload}}
-    {:reply, :ok, s}
+  def copy_blit({xs, ys}, {xd, yd}, width, height) do
+    GenServer.cast(HAL, {:copy_blit, {xs, ys}, {xd, yd}, width, height})
   end
 
-  def handle_info {_port, {:exit_status, exit_status}}, state do
-    {:stop, "rpi_ws281x OS process died with status: #{exit_status}", state}
+  def blit({x, y}, width, height, data) do
+    GenServer.cast(HAL, {:blit, {x, y}, width, height, data})
   end
 
-  defp ws2811_brg(data) when is_list(data) do
-    Enum.reduce(data, <<>>, fn({r, g, b}, acc) ->
-      acc <> <<b :: size(8), r :: size(8), g :: size(8), 0x00 :: size(8)>>
-    end)
-  end
-
-  defp rpi_ws281x_path do
-    Path.join(:code.priv_dir(:nerves_neopixel), "rpi_ws281x")
-  end
-
+  def render, do: GenServer.cast(HAL, :render)
 end
