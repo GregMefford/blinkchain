@@ -3,7 +3,7 @@ defmodule Nerves.Neopixel.Mixfile do
 
   def project do
    [app: :nerves_neopixel,
-    version: "0.3.1",
+    version: "0.3.2",
     description: "Drive WS2812B \"NeoPixel\" RGB LED strips from a Raspberry Pi using Elixir.",
     elixir: "~> 1.3",
     make_clean: ["clean"],
@@ -23,7 +23,18 @@ defmodule Nerves.Neopixel.Mixfile do
   end
 
   defp package do
-   [files: ["lib", "src", "config", "mix.exs", "README*", "LICENSE*", "Makefile"],
+   [files: [
+     "lib",
+     "src/*.c",
+     "src/*.h",
+     "src/rpi_ws281x/*.c",
+     "src/rpi_ws281x/*.h",
+     "config",
+     "mix.exs",
+     "README*",
+     "LICENSE*",
+     "Makefile"
+    ],
     maintainers: ["Greg Mefford"],
     licenses: ["MIT", "BSD 2-Clause"],
     links: %{"GitHub" => "https://github.com/GregMefford/nerves_neopixel"}]
