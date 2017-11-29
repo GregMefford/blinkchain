@@ -19,7 +19,7 @@ defmodule Nerves.Neopixel.Mixfile do
   end
 
   defp deps do
-    [{:elixir_make, "~> 0.3"}]
+    [{:elixir_make, "~> 0.4", runtime: false}]
   end
 
   defp package do

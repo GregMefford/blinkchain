@@ -9,14 +9,9 @@ NeoPixels from a Raspberry Pi using [Nerves](http://nerves-project.org). The
 code would probably also work outside of Nerves with minor modifications to the
 Makefile, if you so desire.
 
-Unfortunately, since the Raspberry Pi has 3.3V I/O outputs and the NeoPixels
-require 5V I/O input, a little piece of hardware is required. You can read more
-about this in [my blog post about the
-project](http://www.gregmefford.com/blog/2016/01/22/driving-neopixels-with-elixir-and-nerves).
-
 ## Installation
 
-1.  Add it to your list of dependencies in `mix.exs`:
+Add it to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
@@ -24,13 +19,23 @@ project](http://www.gregmefford.com/blog/2016/01/22/driving-neopixels-with-elixi
     end
     ```
 
-2. Ensure it is started before your application:
+If you've cloned the `nerves_neopixel` repository, be sure to check out the
+`rpi_ws281x` submodule:
 
-    ```elixir
-    def application do
-      [applications: [:nerves_neopixel]]
-    end
-    ```
+```sh
+$ git submodule init
+$ git submodule update
+```
+
+## Connections
+
+Only a subset of GPIO pins on the Raspberry Pis can control the NeoPixels. See
+[GPIO Usage](https://github.com/jgarff/rpi_ws281x#gpio-usage) for details.
+Additionally, since the Raspberry Pi has 3.3V I/O outputs and the NeoPixels
+require 5V I/O input, you'll need a level shifter to convert between voltages.
+
+You can read more about using NeoPixels with Nerves in [my blog post about the
+project](http://www.gregmefford.com/blog/2016/01/22/driving-neopixels-with-elixir-and-nerves).
 
 ## Usage
 
