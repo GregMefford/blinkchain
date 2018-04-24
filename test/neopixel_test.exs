@@ -6,7 +6,11 @@ defmodule Nerves.Neopixel.NeopixelTest do
   doctest Nerves.Neopixel
 
   alias Nerves.Neopixel
-  alias Neopixel.HAL
+  alias Neopixel.{
+    Color,
+    HAL,
+    Point
+  }
 
   # Arrangement looks like this:
   # Y  X: 0  1  2  3  4  5  6  7
@@ -19,8 +23,7 @@ defmodule Nerves.Neopixel.NeopixelTest do
   #    |-------------------------|
   defp with_neopixel_stick_and_unicorn_phat(_) do
     Application.stop(:nerves_neopixel)
-    {:ok, _pid} = HAL.start_link(config: neopixel_stick_and_unicorn_phat_config())
-    GenServer.call(HAL, :subscribe)
+    {:ok, _pid} = HAL.start_link(config: neopixel_stick_and_unicorn_phat_config(), subscriber: self())
     flush()
     :ok
   end
@@ -29,39 +32,53 @@ defmodule Nerves.Neopixel.NeopixelTest do
     setup [:with_neopixel_stick_and_unicorn_phat]
 
     test "it works with RGB colors" do
-      Neopixel.set_pixel({0, 0}, {255, 0, 128})
-      assert_receive "Called set_pixel(x: 0, y: 0, color: 0x00ff0080)"
+      Neopixel.set_pixel(%Point{x: 0, y: 0}, %Color{r: 255, g: 0, b: 128})
+      assert_receive "DBG: Called set_pixel(x: 0, y: 0, color: 0x00ff0080)"
 
       Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [0][0]: 0x00ff0080"
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [0][0]: 0x00ff0080"
     end
 
     test "it works with RGBW colors" do
-      Neopixel.set_pixel({0, 0}, {255, 0, 128, 64})
-      assert_receive "Called set_pixel(x: 0, y: 0, color: 0x40ff0080)"
+      Neopixel.set_pixel(%Point{x: 0, y: 0}, %Color{r: 255, g: 0, b: 128, w: 64})
+      assert_receive "DBG: Called set_pixel(x: 0, y: 0, color: 0x40ff0080)"
 
       Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [0][0]: 0x40ff0080"
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [0][0]: 0x40ff0080"
     end
 
     test "it renders the pixel in the correct location on a strip" do
-      Neopixel.set_pixel({6, 0}, {255, 0, 128, 64})
-      assert_receive "Called set_pixel(x: 6, y: 0, color: 0x40ff0080)"
+      Neopixel.set_pixel(%Point{x: 6, y: 0}, %Color{r: 255, g: 0, b: 128, w: 64})
+      assert_receive "DBG: Called set_pixel(x: 6, y: 0, color: 0x40ff0080)"
 
       Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [0][6]: 0x40ff0080"
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [0][6]: 0x40ff0080"
     end
 
     test "it renders the pixel in the correct location on a matrix" do
-      Neopixel.set_pixel({6, 3}, {255, 0, 128, 64})
-      assert_receive "Called set_pixel(x: 6, y: 3, color: 0x40ff0080)"
+      Neopixel.set_pixel(%Point{x: 6, y: 3}, %Color{r: 255, g: 0, b: 128, w: 64})
+      assert_receive "DBG: Called set_pixel(x: 6, y: 3, color: 0x40ff0080)"
 
       Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [1][22]: 0x40ff0080"
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [1][22]: 0x40ff0080"
+    end
+
+    test "it works with tuples instead of structs" do
+      Neopixel.set_pixel({0, 1}, {255, 0, 128})
+      assert_receive "DBG: Called set_pixel(x: 0, y: 1, color: 0x00ff0080)"
+
+      Neopixel.set_pixel({0, 1}, {255, 0, 128, 64})
+      assert_receive "DBG: Called set_pixel(x: 0, y: 1, color: 0x40ff0080)"
+
+      Neopixel.set_pixel(%Point{x: 0, y: 1}, {255, 0, 128, 64})
+      assert_receive "DBG: Called set_pixel(x: 0, y: 1, color: 0x40ff0080)"
+
+      Neopixel.set_pixel({0, 1}, %Color{r: 255, g: 0, b: 128, w: 64})
+      assert_receive "DBG: Called set_pixel(x: 0, y: 1, color: 0x40ff0080)"
     end
 
   end
@@ -70,37 +87,48 @@ defmodule Nerves.Neopixel.NeopixelTest do
     setup [:with_neopixel_stick_and_unicorn_phat]
 
     test "it fills the correct pixels in multiple channels" do
-      Neopixel.fill({2, 0}, 2, 3, {255, 0, 128})
-      assert_receive "Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x00ff0080)"
-      assert_receive "Called set_pixel(x: 2, y: 0, color: 0x00ff0080)"
-      assert_receive "Called set_pixel(x: 3, y: 0, color: 0x00ff0080)"
-      assert_receive "Called set_pixel(x: 2, y: 1, color: 0x00ff0080)"
-      assert_receive "Called set_pixel(x: 3, y: 1, color: 0x00ff0080)"
-      assert_receive "Called set_pixel(x: 2, y: 2, color: 0x00ff0080)"
-      assert_receive "Called set_pixel(x: 3, y: 2, color: 0x00ff0080)"
+      Neopixel.fill(%Point{x: 2, y: 0}, 2, 3, %Color{r: 255, g: 0, b: 128})
+      assert_receive "DBG: Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x00ff0080)"
+      assert_receive "DBG:   - write_pixel(x: 2, y: 0, color: 0x00ff0080)"
+      assert_receive "DBG:   - write_pixel(x: 3, y: 0, color: 0x00ff0080)"
+      assert_receive "DBG:   - write_pixel(x: 2, y: 1, color: 0x00ff0080)"
+      assert_receive "DBG:   - write_pixel(x: 3, y: 1, color: 0x00ff0080)"
+      assert_receive "DBG:   - write_pixel(x: 2, y: 2, color: 0x00ff0080)"
+      assert_receive "DBG:   - write_pixel(x: 3, y: 2, color: 0x00ff0080)"
 
       Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [0][1]: 0x00000000" # <- Should not fill outside the specified bounds
-      assert_receive "  [0][2]: 0x00ff0080"
-      assert_receive "  [0][3]: 0x00ff0080"
-      assert_receive "  [0][4]: 0x00000000" # <- Should not fill outside the specified bounds
-      assert_receive "  [1][1]: 0x00000000" # <- Should not fill outside the specified bounds
-      assert_receive "  [1][2]: 0x00ff0080"
-      assert_receive "  [1][3]: 0x00ff0080"
-      assert_receive "  [1][4]: 0x00000000" # <- Should not fill outside the specified bounds
-      assert_receive "  [1][9]: 0x00000000" # <- Should not fill outside the specified bounds
-      assert_receive "  [1][10]: 0x00ff0080"
-      assert_receive "  [1][11]: 0x00ff0080"
-      assert_receive "  [1][12]: 0x00000000" # <- Should not fill outside the specified bounds
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [0][1]: 0x00000000" # <- Should not fill outside the specified bounds
+      assert_receive "DBG:   [0][2]: 0x00ff0080"
+      assert_receive "DBG:   [0][3]: 0x00ff0080"
+      assert_receive "DBG:   [0][4]: 0x00000000" # <- Should not fill outside the specified bounds
+      assert_receive "DBG:   [1][1]: 0x00000000" # <- Should not fill outside the specified bounds
+      assert_receive "DBG:   [1][2]: 0x00ff0080"
+      assert_receive "DBG:   [1][3]: 0x00ff0080"
+      assert_receive "DBG:   [1][4]: 0x00000000" # <- Should not fill outside the specified bounds
+      assert_receive "DBG:   [1][9]: 0x00000000" # <- Should not fill outside the specified bounds
+      assert_receive "DBG:   [1][10]: 0x00ff0080"
+      assert_receive "DBG:   [1][11]: 0x00ff0080"
+      assert_receive "DBG:   [1][12]: 0x00000000" # <- Should not fill outside the specified bounds
     end
 
     test "works with RGB or RGBW colors" do
-      Neopixel.fill({2, 0}, 2, 3, {255, 0, 128})
-      assert_receive "Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x00ff0080)"
+      Neopixel.fill(%Point{x: 2, y: 0}, 2, 3, %Color{r: 255, g: 0, b: 128})
+      assert_receive "DBG: Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x00ff0080)"
 
-      Neopixel.fill({2, 0}, 2, 3, {255, 0, 128, 64})
-      assert_receive "Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x40ff0080)"
+      Neopixel.fill(%Point{x: 2, y: 0}, 2, 3, %Color{r: 255, g: 0, b: 128, w: 64})
+      assert_receive "DBG: Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x40ff0080)"
+    end
+
+    test "works with tuples instead of structs" do
+      Neopixel.fill({2, 0}, 2, 3, %Color{r: 255, g: 0, b: 128})
+      assert_receive "DBG: Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x00ff0080)"
+
+      Neopixel.fill(%Point{x: 2, y: 0}, 2, 3, {255, 0, 128})
+      assert_receive "DBG: Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x00ff0080)"
+
+      Neopixel.fill(%Point{x: 2, y: 0}, 2, 3, {255, 0, 128, 64})
+      assert_receive "DBG: Called fill(x: 2, y: 0, width: 2, height: 3, color: 0x40ff0080)"
     end
 
   end
@@ -109,50 +137,61 @@ defmodule Nerves.Neopixel.NeopixelTest do
     setup [:with_neopixel_stick_and_unicorn_phat]
 
     test "it copies the correct pixels in multiple channels" do
-      Neopixel.set_pixel({2, 0}, {255,   0,   0,   0})
-      Neopixel.set_pixel({3, 0}, {255, 255,   0,   0})
-      Neopixel.set_pixel({2, 1}, {255, 255, 255,   0})
-      Neopixel.set_pixel({3, 1}, {255, 255, 255, 255})
-      Neopixel.set_pixel({2, 2}, {  0,   0,   0, 255})
-      Neopixel.set_pixel({3, 2}, {  0,   0, 255, 255})
+      Neopixel.set_pixel(%Point{x: 2, y: 0}, %Color{r: 255, g:   0, b:   0, w:   0})
+      Neopixel.set_pixel(%Point{x: 3, y: 0}, %Color{r: 255, g: 255, b:   0, w:   0})
+      Neopixel.set_pixel(%Point{x: 2, y: 1}, %Color{r: 255, g: 255, b: 255, w:   0})
+      Neopixel.set_pixel(%Point{x: 3, y: 1}, %Color{r: 255, g: 255, b: 255, w: 255})
+      Neopixel.set_pixel(%Point{x: 2, y: 2}, %Color{r:   0, g:   0, b:   0, w: 255})
+      Neopixel.set_pixel(%Point{x: 3, y: 2}, %Color{r:   0, g:   0, b: 255, w: 255})
 
-      Neopixel.copy({2, 0}, {4, 0}, 2, 3)
-      assert_receive "Called copy(xs: 2, ys: 0, xd: 4, yd: 0, width: 2, height: 3)"
-      assert_receive "Called set_pixel(x: 4, y: 0, color: 0x00ff0000)"
-      assert_receive "Called set_pixel(x: 5, y: 0, color: 0x00ffff00)"
-      assert_receive "Called set_pixel(x: 4, y: 1, color: 0x00ffffff)"
-      assert_receive "Called set_pixel(x: 5, y: 1, color: 0xffffffff)"
-      assert_receive "Called set_pixel(x: 4, y: 2, color: 0xff000000)"
-      assert_receive "Called set_pixel(x: 5, y: 2, color: 0xff0000ff)"
+      Neopixel.copy(%Point{x: 2, y: 0}, %Point{x: 4, y: 0}, 2, 3)
+      assert_receive "DBG: Called copy(xs: 2, ys: 0, xd: 4, yd: 0, width: 2, height: 3)"
+      assert_receive "DBG:   - write_pixel(x: 4, y: 0, color: 0x00ff0000)"
+      assert_receive "DBG:   - write_pixel(x: 5, y: 0, color: 0x00ffff00)"
+      assert_receive "DBG:   - write_pixel(x: 4, y: 1, color: 0x00ffffff)"
+      assert_receive "DBG:   - write_pixel(x: 5, y: 1, color: 0xffffffff)"
+      assert_receive "DBG:   - write_pixel(x: 4, y: 2, color: 0xff000000)"
+      assert_receive "DBG:   - write_pixel(x: 5, y: 2, color: 0xff0000ff)"
 
       Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [0][4]: 0x00ff0000"
-      assert_receive "  [0][5]: 0x00ffff00"
-      assert_receive "  [1][4]: 0x00ffffff"
-      assert_receive "  [1][5]: 0xffffffff"
-      assert_receive "  [1][12]: 0xff000000"
-      assert_receive "  [1][13]: 0xff0000ff"
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [0][4]: 0x00ff0000"
+      assert_receive "DBG:   [0][5]: 0x00ffff00"
+      assert_receive "DBG:   [1][4]: 0x00ffffff"
+      assert_receive "DBG:   [1][5]: 0xffffffff"
+      assert_receive "DBG:   [1][12]: 0xff000000"
+      assert_receive "DBG:   [1][13]: 0xff0000ff"
     end
 
     test "copies the pixels atomically" do
-      Neopixel.set_pixel({0, 0}, {255,   0,   0,   0})
-      Neopixel.set_pixel({1, 0}, {255, 255,   0,   0})
-      Neopixel.set_pixel({2, 0}, {255, 255, 255,   0})
-      Neopixel.set_pixel({3, 0}, {255, 255, 255, 255})
+      Neopixel.set_pixel(%Point{x: 0, y: 0}, %Color{r: 255, g:   0, b:   0, w:   0})
+      Neopixel.set_pixel(%Point{x: 1, y: 0}, %Color{r: 255, g: 255, b:   0, w:   0})
+      Neopixel.set_pixel(%Point{x: 2, y: 0}, %Color{r: 255, g: 255, b: 255, w:   0})
+      Neopixel.set_pixel(%Point{x: 3, y: 0}, %Color{r: 255, g: 255, b: 255, w: 255})
 
-      Neopixel.copy({0, 0}, {2, 0}, 4, 1)
+      Neopixel.copy(%Point{x: 0, y: 0}, %Point{x: 2, y: 0}, 4, 1)
 
       Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [0][0]: 0x00ff0000"
-      assert_receive "  [0][1]: 0x00ffff00"
-      assert_receive "  [0][2]: 0x00ff0000"
-      assert_receive "  [0][3]: 0x00ffff00"
-      assert_receive "  [0][4]: 0x00ffffff"
-      assert_receive "  [0][5]: 0xffffffff"
-      assert_receive "  [0][6]: 0x00000000"
-      assert_receive "  [0][7]: 0x00000000"
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [0][0]: 0x00ff0000"
+      assert_receive "DBG:   [0][1]: 0x00ffff00"
+      assert_receive "DBG:   [0][2]: 0x00ff0000"
+      assert_receive "DBG:   [0][3]: 0x00ffff00"
+      assert_receive "DBG:   [0][4]: 0x00ffffff"
+      assert_receive "DBG:   [0][5]: 0xffffffff"
+      assert_receive "DBG:   [0][6]: 0x00000000"
+      assert_receive "DBG:   [0][7]: 0x00000000"
+    end
+
+    test "works with tuples instead of structs" do
+      Neopixel.copy({2, 0}, %Point{x: 4, y: 0}, 2, 3)
+      assert_receive "DBG: Called copy(xs: 2, ys: 0, xd: 4, yd: 0, width: 2, height: 3)"
+
+      Neopixel.copy(%Point{x: 2, y: 0}, {4, 0}, 2, 3)
+      assert_receive "DBG: Called copy(xs: 2, ys: 0, xd: 4, yd: 0, width: 2, height: 3)"
+
+      Neopixel.copy({2, 0}, {4, 0}, 2, 3)
+      assert_receive "DBG: Called copy(xs: 2, ys: 0, xd: 4, yd: 0, width: 2, height: 3)"
     end
 
   end
@@ -161,22 +200,33 @@ defmodule Nerves.Neopixel.NeopixelTest do
     setup [:with_neopixel_stick_and_unicorn_phat]
 
     test "it doesn't copy pixels that are 0x00000000" do
-      Neopixel.set_pixel({1, 0}, {   0,   0, 255,   0})
-      Neopixel.set_pixel({0, 1}, {   0,   0, 255,   0})
-      Neopixel.set_pixel({2, 1}, {   0,   0, 255,   0})
-      Neopixel.fill({3, 0}, 3, 2, {255,   0,   0,   0})
+      Neopixel.set_pixel(%Point{x: 1, y: 0}, %Color{r:    0, g:   0, b: 255, w:   0})
+      Neopixel.set_pixel(%Point{x: 0, y: 1}, %Color{r:    0, g:   0, b: 255, w:   0})
+      Neopixel.set_pixel(%Point{x: 2, y: 1}, %Color{r:    0, g:   0, b: 255, w:   0})
+      Neopixel.fill(%Point{x: 3, y: 0}, 3, 2, %Color{r: 255, g:   0, b:   0, w:   0})
 
-      Neopixel.copy_blit({0, 0}, {3, 0}, 3, 2)
-      assert_receive "Called copy_blit(xs: 0, ys: 0, xd: 3, yd: 0, width: 3, height: 2)"
+      Neopixel.copy_blit(%Point{x: 0, y: 0}, %Point{x: 3, y: 0}, 3, 2)
+      assert_receive "DBG: Called copy_blit(xs: 0, ys: 0, xd: 3, yd: 0, width: 3, height: 2)"
 
       Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [0][3]: 0x00ff0000" # <- Ignored
-      assert_receive "  [0][4]: 0x000000ff"
-      assert_receive "  [0][5]: 0x00ff0000" # <- Ignored
-      assert_receive "  [1][3]: 0x000000ff"
-      assert_receive "  [1][4]: 0x00ff0000" # <- Ignored
-      assert_receive "  [1][5]: 0x000000ff"
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [0][3]: 0x00ff0000" # <- Ignored
+      assert_receive "DBG:   [0][4]: 0x000000ff"
+      assert_receive "DBG:   [0][5]: 0x00ff0000" # <- Ignored
+      assert_receive "DBG:   [1][3]: 0x000000ff"
+      assert_receive "DBG:   [1][4]: 0x00ff0000" # <- Ignored
+      assert_receive "DBG:   [1][5]: 0x000000ff"
+    end
+
+    test "works with tuples instead of structs" do
+      Neopixel.copy_blit({0, 0}, %Point{x: 3, y: 0}, 3, 2)
+      assert_receive "DBG: Called copy_blit(xs: 0, ys: 0, xd: 3, yd: 0, width: 3, height: 2)"
+
+      Neopixel.copy_blit(%Point{x: 0, y: 0}, {3, 0}, 3, 2)
+      assert_receive "DBG: Called copy_blit(xs: 0, ys: 0, xd: 3, yd: 0, width: 3, height: 2)"
+
+      Neopixel.copy_blit({0, 0}, {3, 0}, 3, 2)
+      assert_receive "DBG: Called copy_blit(xs: 0, ys: 0, xd: 3, yd: 0, width: 3, height: 2)"
     end
 
   end
@@ -185,24 +235,33 @@ defmodule Nerves.Neopixel.NeopixelTest do
     setup [:with_neopixel_stick_and_unicorn_phat]
 
     test "it doesn't change pixels that are 0x00000000" do
+      data = [
+        %Color{r: 0, g: 0, b: 0, w: 0}, %Color{r: 0, g: 0, b: 0, w: 255}, %Color{r: 0, g: 0, b: 0, w: 0},
+        %Color{r: 0, g: 0, b: 0, w: 255}, %Color{r: 0, g: 0, b: 0, w: 0}, %Color{r: 0, g: 0, b: 0, w: 255}
+      ]
+      Neopixel.fill(%Point{x: 3, y: 0}, 3, 2, %Color{r: 255, g:   0, b:   0, w:   0})
+
+      :ok = Neopixel.blit(%Point{x: 3, y: 0}, 3, 2, data)
+      assert_receive "DBG: Called blit(x: 3, y: 0, width: 3, height: 2, data: <binary>)"
+
+      Neopixel.render()
+      assert_receive "DBG: Called render()"
+      assert_receive "DBG:   [0][3]: 0x00ff0000" # <- Ignored
+      assert_receive "DBG:   [0][4]: 0x000000ff"
+      assert_receive "DBG:   [0][5]: 0x00ff0000" # <- Ignored
+      assert_receive "DBG:   [1][3]: 0x000000ff"
+      assert_receive "DBG:   [1][4]: 0x00ff0000" # <- Ignored
+      assert_receive "DBG:   [1][5]: 0x000000ff"
+    end
+
+    test "works with tuples instead of structs" do
       data =
         <<
           0, 0, 0,   0,   0, 0, 0, 255,   0, 0, 0,   0,
           0, 0, 0, 255,   0, 0, 0,   0,   0, 0, 0, 255
         >>
-      Neopixel.fill({3, 0}, 3, 2, {255,   0,   0,   0})
-
       Neopixel.blit({3, 0}, 3, 2, data)
-      assert_receive "Called blit(x: 3, y: 0, width: 3, height: 2, data: <binary>)"
-
-      Neopixel.render()
-      assert_receive "Called render()"
-      assert_receive "  [0][3]: 0x00ff0000" # <- Ignored
-      assert_receive "  [0][4]: 0x000000ff"
-      assert_receive "  [0][5]: 0x00ff0000" # <- Ignored
-      assert_receive "  [1][3]: 0x000000ff"
-      assert_receive "  [1][4]: 0x00ff0000" # <- Ignored
-      assert_receive "  [1][5]: 0x000000ff"
+      assert_receive "DBG: Called blit(x: 3, y: 0, width: 3, height: 2, data: <binary>)"
     end
 
   end
@@ -212,7 +271,7 @@ defmodule Nerves.Neopixel.NeopixelTest do
     receive do
       _msg -> flush(:silent, opts)
     after
-      0 -> :ok
+      100 -> :ok
     end
   end
   defp flush(:inspect, opts) do
@@ -221,7 +280,7 @@ defmodule Nerves.Neopixel.NeopixelTest do
         IO.inspect(msg, opts)
         flush(:inspect, opts)
     after
-      0 -> :ok
+      100 -> :ok
     end
   end
 

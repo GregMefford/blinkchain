@@ -1,11 +1,11 @@
 defmodule Nerves.Neopixel.Application do
-  use Application
-
-  require Logger
-
   @moduledoc """
   # `Nerves.Neopixel.Application`
   """
+
+  use Application
+
+  require Logger
 
   def start(_type, _args) do
     Logger.debug("Nerves.Neopixel.start")

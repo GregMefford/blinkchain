@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "rpi_ws281x/ws2811.h"
-#include "utils.h"
+#include "port_interface.h"
 
 #define RPI_PWM_CHANNELS 2
 

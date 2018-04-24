@@ -8,7 +8,7 @@
 
 #include "rpi_ws281x/ws2811.h"
 #include "base64.h"
-#include "utils.h"
+#include "port_interface.h"
 
 #define DMA_CHANNEL 10
 
@@ -24,35 +24,6 @@ int32_t min(int32_t a, int32_t b) {
 
 int32_t max(int32_t a, int32_t b) {
     return (a > b) ? a : b;
-}
-
-void init_canvas(uint16_t width, uint16_t height, canvas_t *canvas) {
-    debug("Called init_canvas(width: %hu, height: %hu)", width, height);
-    canvas->width = width;
-    canvas->height = height;
-    if (canvas->topology != NULL)
-        free(canvas->topology);
-    canvas->topology = malloc(width * height * sizeof(uint16_t));
-    // Initialize all offsets to USHRT_MAX
-    memset(canvas->topology, 0xFF, width * height * sizeof(uint16_t));
-}
-
-void init_pixels(uint8_t channel, uint16_t offset, uint16_t x, uint16_t y, uint16_t count, int8_t dx, int8_t dy, canvas_t *canvas) {
-    debug("Called init_pixels(channel: %hhu, offset: %hu, x: %hu, y: %hu, count: %hu, dx: %hhi, dy: %hhi)", channel, offset, x, y, count, dx, dy);
-    if (offset + count - 1 >= 32767) // 0xEFFF
-        errx(EXIT_FAILURE, "The offset of the last pixel in each channel must be less than 32767.");
-    if (min(x, x + (count - 1) * dx) < 0 || max(x, x + (count - 1) * dx) >= canvas->width ||
-            min(y, y + (count - 1) * dy) < 0 || max(y, y + (count - 1) * dy) >= canvas->height)
-        errx(EXIT_FAILURE, "The pixels must all be within the bounds of the canvas in init_pixel command");
-    // MSB designates which channel to use
-    offset |= (channel << 15);
-    uint16_t i;
-    for (i = 0; i < count; i++) {
-        debug("  Setting topology(%hu, %hu) to %hu", x, y, offset);
-        canvas->topology[(canvas->width * y) + x] = offset++;
-        x += dx;
-        y += dy;
-    }
 }
 
 int parse_strip_type(char *strip_type) {
@@ -84,24 +55,141 @@ int parse_strip_type(char *strip_type) {
         errx(EXIT_FAILURE, "Invalid strip type %s\n", strip_type);
 }
 
-void set_brightness(uint8_t channel, uint8_t brightness, ws2811_channel_t *channels) {
+void init_canvas(canvas_t *canvas) {
+    uint16_t width, height;
+    char nl;
+    if (scanf("%hu %hu%c", &width, &height, &nl) != 3 || nl != '\n') {
+        reply_error("Argument error");
+        return;
+    }
+    debug("Called init_canvas(width: %hu, height: %hu)", width, height);
+    canvas->width = width;
+    canvas->height = height;
+    if (canvas->topology != NULL) {
+        free(canvas->topology);
+    }
+    canvas->topology = malloc(width * height * sizeof(uint16_t));
+    // Initialize all offsets to USHRT_MAX
+    memset(canvas->topology, 0xFF, width * height * sizeof(uint16_t));
+    reply_ok();
+}
+
+void init_pixels(canvas_t *canvas) {
+    uint16_t x, y, count, offset;
+    uint8_t channel;
+    int8_t dx, dy;
+    char nl;
+    if (scanf("%hhu %hu %hu %hu %hu %hhi %hhi%c", &channel, &offset, &x, &y, &count, &dx, &dy, &nl) != 8 || nl != '\n') {
+        reply_error("Argument error");
+    }
+    debug("Called init_pixels(channel: %hhu, offset: %hu, x: %hu, y: %hu, count: %hu, dx: %hhi, dy: %hhi)", channel, offset, x, y, count, dx, dy);
+    if (offset + count - 1 >= 32767) { // 0xEFFF
+        reply_error("The offset of the last pixel in each channel must be less than 32767.");
+        return;
+    }
+    if (min(x, x + (count - 1) * dx) < 0 || max(x, x + (count - 1) * dx) >= canvas->width ||
+            min(y, y + (count - 1) * dy) < 0 || max(y, y + (count - 1) * dy) >= canvas->height) {
+        reply_error("Pixels must all be within the bounds of the canvas");
+        return;
+    }
+    // MSB designates which channel to use
+    offset |= (channel << 15);
+    uint16_t i;
+    for (i = 0; i < count; i++) {
+        debug("  Setting topology(%hu, %hu) to %hu", x, y, offset);
+        canvas->topology[(canvas->width * y) + x] = offset++;
+        x += dx;
+        y += dy;
+    }
+    reply_ok();
+}
+
+void set_invert(ws2811_channel_t *channels) {
+    uint8_t channel, invert;
+    char nl;
+    if (scanf("%hhu %hhu%c", &channel, &invert, &nl) != 3 || nl != '\n') {
+        reply_error("Argument error in set_invert command");
+        return;
+    }
+    debug("Called set_invert(channel: %hhu, invert: %hhu)", channel, invert);
+    if(channel > 1) {
+        reply_error("Channel must be 0 or 1");
+        return;
+    }
+    if(invert > 1) {
+        reply_error("Invert must be 0 or 1");
+        return;
+    }
+    channels[channel].invert = invert;
+    reply_ok();
+}
+
+void set_brightness(ws2811_channel_t *channels) {
+    uint8_t channel, brightness;
+    char nl;
+    if (scanf("%hhu %hhu%c", &channel, &brightness, &nl) != 3 || nl != '\n') {
+        reply_error("Argument error");
+        return;
+    }
+    if(channel > 1) {
+        reply_error("Channel must be 0 or 1");
+        return;
+    }
     debug("Called set_brightness(channel: %hhu, brightness: %hhu)", channel, brightness);
-    if (channel > 1)
-        errx(EXIT_FAILURE, "Channel must be 0 or 1.");
     channels[channel].brightness = brightness;
+    reply_ok();
 }
 
-void set_gamma(uint8_t channel, uint8_t *gamma, ws2811_channel_t *channels) {
+void set_gamma(ws2811_channel_t *channels) {
+    uint8_t channel;
+    uint32_t base64_size = 256 * 4 * 4 / 3; // Each color channel has 256 bytes, scaled by 4/3 for Base64
+    char *base64_buffer = malloc(base64_size + 1);
+    char format[16], nl;
+    sprintf(format, "%%hhu %%%us%%c", base64_size);
+    if (scanf(format, &channel, base64_buffer, &nl) != 3 || nl != '\n') {
+        reply_error("Argument error");
+        return;
+    }
+    int decoded_size;
+    uint8_t *data = unbase64(base64_buffer, strlen(base64_buffer), &decoded_size);
+    free(base64_buffer);
+    if (decoded_size != 4 * 256) {
+        reply_error("Size of gamma table must be 4 * 256 bytes");
+        free(data);
+        return;
+    }
+    if (channel > 1) {
+        reply_error("Channel must be 0 or 1");
+        return;
+    }
     debug("Called set_gamma(channel: %hhu, gamma: <binary>)", channel);
-    if (channel > 1)
-        errx(EXIT_FAILURE, "Channel must be 0 or 1.");
-    channels[channel].gamma = gamma;
+    channels[channel].gamma = data;
+    reply_ok();
 }
 
-void set_pixel(uint16_t x, uint16_t y, ws2811_led_t color, ws2811_channel_t *channels, const canvas_t *canvas) {
-    debug("Called set_pixel(x: %hu, y: %hu, color: 0x%08x)", x, y, color);
-    if (x >= canvas->width || y >= canvas->height)
-        errx(EXIT_FAILURE, "Cannot draw outside canvas dimensions");
+ws2811_led_t read_pixel(uint16_t x, uint16_t y, ws2811_channel_t *channels, const canvas_t *canvas) {
+    uint16_t offset = canvas->topology[(canvas->width * y) + x];
+    ws2811_led_t color;
+    // Ignore canvas locations that weren't initialized with pixels
+    if (offset == USHRT_MAX) {
+        // TODO: We should probably store the whole canvas instead of just the
+        // actually-mapped pixels in the topology so we don't have to do this...
+        // and maybe use OpenGL ES or something to do the low-level drawing.
+        color = (ws2811_led_t) 0x00000000;
+    } else {
+        // MSB designates which channel to use
+        uint8_t channel = offset >> 15;
+        // Clear the MSB so we can use pixel as the offset within the channel
+        offset &= ~(1 << 15);
+        color = channels[channel].leds[offset];
+    }
+    debug("  - read_pixel(x: %hu, y: %hu) => 0x%08x", x, y, color);
+    return color;
+
+}
+
+void write_pixel(uint16_t x, uint16_t y, ws2811_led_t color, ws2811_channel_t *channels, const canvas_t *canvas) {
+    debug("  - write_pixel(x: %hu, y: %hu, color: 0x%08x)", x, y, color);
     uint16_t offset = canvas->topology[(canvas->width * y) + x];
     // Ignore canvas locations that weren't initialized with pixels
     if (offset != USHRT_MAX) {
@@ -113,47 +201,74 @@ void set_pixel(uint16_t x, uint16_t y, ws2811_led_t color, ws2811_channel_t *cha
     }
 }
 
-ws2811_led_t get_pixel(uint16_t x, uint16_t y, ws2811_channel_t *channels, const canvas_t *canvas) {
-    debug("Called get_pixel(x: %hu, y: %hu)", x, y);
-    if (x >= canvas->width || y >= canvas->height)
-        errx(EXIT_FAILURE, "Cannot read from outside canvas dimensions");
-    uint16_t offset = canvas->topology[(canvas->width * y) + x];
-    // Ignore canvas locations that weren't initialized with pixels
-    if (offset == USHRT_MAX) {
-        // TODO: We should probably store the whole canvas instead of just the
-        // actually-mapped pixels in the topology so we don't have to do this...
-        // and maybe use OpenGL ES or something to do the low-level drawing.
-        return 0x00000000;
-    } else {
-        // MSB designates which channel to use
-        uint8_t channel = offset >> 15;
-        // Clear the MSB so we can use pixel as the offset within the channel
-        offset &= ~(1 << 15);
-        return  channels[channel].leds[offset];
+void get_pixel(ws2811_channel_t *channels, const canvas_t *canvas) {
+    uint16_t x, y;
+    char nl;
+    if (scanf("%hu %hu%c", &x, &y, &nl) != 3 || nl != '\n') {
+        reply_error("Argument error");
+        return;
     }
+    debug("Called get_pixel(x: %hu, y: %hu)", x, y);
+    if (x >= canvas->width || y >= canvas->height) {
+        reply_error("Cannot read from outside canvas dimensions");
+        return;
+    }
+    reply_ok_payload("0x%08x", read_pixel(x, y, channels, canvas));
 }
 
-void fill(uint16_t x, uint16_t y, uint16_t width, uint16_t height, ws2811_led_t color, ws2811_channel_t *channels, const canvas_t *canvas) {
+void set_pixel(ws2811_channel_t *channels, const canvas_t *canvas) {
+    uint16_t x, y;
+    uint8_t r, g, b, w;
+    char nl;
+    if (scanf("%hu %hu %hhu %hhu %hhu %hhu%c", &x, &y, &r, &g, &b, &w, &nl) != 7 || nl != '\n') {
+        reply_error("Argument error");
+        return;
+    }
+    // ws2811_led_t is uint32_t: 0xWWRRGGBB
+    ws2811_led_t color = (w << 24) | (r << 16) | (g << 8) | b;
+    debug("Called set_pixel(x: %hu, y: %hu, color: 0x%08x)", x, y, color);
+    if (x >= canvas->width || y >= canvas->height) {
+        reply_error("Cannot draw outside canvas dimensions");
+        return;
+    }
+    write_pixel(x, y, color, channels, canvas);
+    reply_ok();
+}
+
+void fill(ws2811_channel_t *channels, const canvas_t *canvas) {
+    uint16_t x, y, width, height;
+    uint8_t r, g, b, w;
+    char nl;
+    if (scanf("%hu %hu %hu %hu %hhu %hhu %hhu %hhu%c", &x, &y, &width, &height, &r, &g, &b, &w, &nl) != 9 || nl != '\n') {
+        reply_error("Argument error");
+        return;
+    }
+    // ws2811_led_t is uint32_t: 0xWWRRGGBB
+    ws2811_led_t color = (w << 24) | (r << 16) | (g << 8) | b;
     debug("Called fill(x: %hu, y: %hu, width: %hu, height: %hu, color: 0x%08x)", x, y, width, height, color);
-    if (x >= canvas->width || y >= canvas->height ||
-            x + width >= canvas->width || y + height >= canvas->height)
-        errx(EXIT_FAILURE, "Cannot draw outside canvas dimensions");
-    uint16_t row, col;
+    if (x >= canvas->width || y >= canvas->height || x + width >= canvas->width || y + height >= canvas->height) {
+        reply_error("Cannot draw outside canvas dimensions");
+        return;
+    }
+    uint16_t row, col, offset;
     for(row = 0; row < height; row++) {
         for(col = 0; col < width; col++) {
-            set_pixel(x + col, y + row, color, channels, canvas);
+            write_pixel(x + col, y + row, color, channels, canvas);
         }
     }
 }
 
 void copy(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t width, uint16_t height, bool copy_null, ws2811_channel_t *channels, const canvas_t *canvas) {
     debug("Called copy%s(xs: %hu, ys: %hu, xd: %hu, yd: %hu, width: %hu, height: %hu)", copy_null ? "" : "_blit", xs, ys, xd, yd, width, height);
-    // Note: We skip bounds-checking here because it's already done in each call to get_pixel and set_pixel.
+    if (xs + width >= canvas->width || ys + height >= canvas->height || xd + width >= canvas->width || yd + height >= canvas->height) {
+        reply_error("Cannot draw outside canvas dimensions");
+        return;
+    }
     uint16_t row, col;
     ws2811_led_t *buffer = calloc(width * height, sizeof(ws2811_led_t));;
     for(row = 0; row < height; row++) {
         for(col = 0; col < width; col++) {
-            buffer[row * width + col] = get_pixel(xs + col, ys + row, channels, canvas);
+            buffer[row * width + col] = read_pixel(xs + col, ys + row, channels, canvas);
         }
     }
     // We have to copy to a temporary buffer and then back so that the copy happens "all at once."
@@ -162,13 +277,17 @@ void copy(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t width, ui
         for(col = 0; col < width; col++) {
             color = buffer[row * width + col];
             if (color != 0x00000000 || copy_null)
-                set_pixel(xd + col, yd + row, color, channels, canvas);
+                write_pixel(xd + col, yd + row, color, channels, canvas);
         }
     }
 }
 
 void blit(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *data, ws2811_channel_t *channels, const canvas_t *canvas) {
     debug("Called blit(x: %hu, y: %hu, width: %hu, height: %hu, data: <binary>)", x, y, width, height);
+    if (x + width >= canvas->width || y + height >= canvas->height) {
+        reply_error("Cannot draw outside canvas dimensions");
+        return;
+    }
     uint16_t row, col;
     ws2811_led_t color;
     for(row = 0; row < height; row++) {
@@ -178,7 +297,7 @@ void blit(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t
             color = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
             // Ignore totally black pixels in the source image to allow simple sprite masking.
             if (color != 0x00000000)
-                set_pixel(x + col, y + row, color, channels, canvas);
+                write_pixel(x + col, y + row, color, channels, canvas);
         }
     }
 }
@@ -247,84 +366,28 @@ int main(int argc, char *argv[]) {
         }
 
         if (strcasecmp(buffer, "init_canvas") == 0) {
-            uint16_t width, height;
-            char nl;
-            if (scanf("%hu %hu%c", &width, &height, &nl) != 3 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in init_canvas command");
-            init_canvas(width, height, &canvas);
+            init_canvas(&canvas);
 
         } else if (strcasecmp(buffer, "init_pixels") == 0) {
-            uint16_t x, y, count, offset;
-            uint8_t channel;
-            int8_t dx, dy;
-            char nl;
-            if (scanf("%hhu %hu %hu %hu %hu %hhi %hhi%c", &channel, &offset, &x, &y, &count, &dx, &dy, &nl) != 8 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in init_pixels command");
-            init_pixels(channel, offset, x, y, count, dx, dy, &canvas);
+            init_pixels(&canvas);
 
         } else if (strcasecmp(buffer, "set_invert") == 0) {
-            uint8_t channel, invert;
-            char nl;
-            if (scanf("%hhu %hhu%c", &channel, &invert, &nl) != 3 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in set_invert command");
-            debug("Called set_invert(channel: %hhu, invert: %hhu)", channel, invert);
-            if(channel > 1)
-                errx(EXIT_FAILURE, "Channel must be 0 or 1 in set_invert command");
-            if(invert > 1)
-                errx(EXIT_FAILURE, "Invert must be 0 or 1 in set_invert command");
-            ledstring.channel[channel].invert = invert;
+            set_invert(ledstring.channel);
 
         } else if (strcasecmp(buffer, "set_brightness") == 0) {
-            uint8_t channel, brightness;
-            char nl;
-            if (scanf("%hhu %hhu%c", &channel, &brightness, &nl) != 3 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in set_brightness command");
-            if(channel > 1)
-                errx(EXIT_FAILURE, "Channel must be 0 or 1 in set_brightness command");
-            set_brightness(channel, brightness, ledstring.channel);
+            set_brightness(ledstring.channel);
 
         } else if (strcasecmp(buffer, "set_gamma") == 0) {
-            uint8_t channel;
-            uint32_t base64_size = 256 * 4 * 4 / 3; // Each color channel has 256 bytes, scaled by 4/3 for Base64
-            char *base64_buffer = malloc(base64_size + 1);
-            char format[16], nl;
-            sprintf(format, "%%hhu %%%us%%c", base64_size);
-            if (scanf(format, &channel, base64_buffer, &nl) != 3 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in set_gamma command");
-            int decoded_size;
-            uint8_t *data = unbase64(base64_buffer, strlen(base64_buffer), &decoded_size);
-            if (decoded_size != 4 * 256)
-                errx(EXIT_FAILURE, "Size of gamma table must be 4 * 256 bytes in set_gamma command");
-            free(base64_buffer);
-            set_gamma(channel, data, ledstring.channel);
-            free(data);
+            set_gamma(ledstring.channel);
 
         } else if (strcasecmp(buffer, "set_pixel") == 0) {
-            uint16_t x, y;
-            uint8_t r, g, b, w;
-            char nl;
-            if (scanf("%hu %hu %hhu %hhu %hhu %hhu%c", &x, &y, &r, &g, &b, &w, &nl) != 7 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in set_pixel command");
-            // ws2811_led_t is uint32_t: 0xWWRRGGBB
-            ws2811_led_t color = (w << 24) | (r << 16) | (g << 8) | b;
-            set_pixel(x, y, color, ledstring.channel, &canvas);
+            set_pixel(ledstring.channel, &canvas);
 
         } else if (strcasecmp(buffer, "get_pixel") == 0) {
-            uint16_t x, y;
-            char nl;
-            if (scanf("%hu %hu%c", &x, &y, &nl) != 3 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in get_pixel command");
-            get_pixel(y, x, ledstring.channel, &canvas);
+            get_pixel(ledstring.channel, &canvas);
 
         } else if (strcasecmp(buffer, "fill") == 0) {
-            uint16_t x, y, width, height;
-            uint8_t r, g, b, w;
-            char nl;
-            if (scanf("%hu %hu %hu %hu %hhu %hhu %hhu %hhu%c", &x, &y, &width, &height, &r, &g, &b, &w, &nl) != 9 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in set_pixel command");
-            // ws2811_led_t is uint32_t: 0xWWRRGGBB
-            ws2811_led_t color = (w << 24) | (r << 16) | (g << 8) | b;
-            fill(x, y, width, height, color, ledstring.channel, &canvas);
+            fill(ledstring.channel, &canvas);
 
         } else if (strcasecmp(buffer, "copy") == 0) {
             uint16_t xs, ys, xd, yd, w, h;
@@ -378,9 +441,10 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
+            reply_ok();
 
         } else {
-            errx(EXIT_FAILURE, "Unrecognized command: '%s'", buffer);
+            reply_error("Unrecognized command: '%s'", buffer);
         }
     }
 }

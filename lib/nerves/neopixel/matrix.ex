@@ -1,18 +1,43 @@
 defmodule Nerves.Neopixel.Matrix do
+  @moduledoc """
+  Represents a contiguous matrix of pixels, composed of liner strips with a
+  regular spacing and orientation pattern.
+
+  * `count`: The number of pixels in each axis, expressed as `{x, y}`.
+    (default: `{1, 1}`)
+  * `direction`: The `t:Strip.direction/0` of the wiring connection along each axis,
+    expressed as `{major, minor}`. (default: `{:right, :down}`)
+  * `origin`: The top-left-most location in the matrix, expressed as `{x, y}`.
+    (default: `{0, 0}`)
+  * `progressive`: Whether the wiring `t:Strip.direction/0` of each successive
+    strip is reversed on the major axis. (default: `false`)
+  * `spacing`: How far each row and column are spaced on the virtual canvas,
+    expressed as `{x, y}`. (default: `{1, 1}`)
+  """
+
   alias Nerves.Neopixel.{
     Matrix,
     Strip
   }
 
+  @typedoc @moduledoc
+  @type t :: %__MODULE__{
+    count: {Neopixel.uint16(), Neopixel.uint16()},
+    direction: {Strip.direction(), Strip.direction()},
+    origin: {Neopixel.uint16(), Neopixel.uint16()},
+    progressive: boolean(),
+    spacing: {Neopixel.uint16(), Neopixel.uint16()}
+  }
+
   defstruct [
-    origin: {0, 0},
     count: {1, 1},
-    spacing: {1, 1},
     direction: {:right, :down},
-    progressive: false
+    origin: {0, 0},
+    progressive: false,
+    spacing: {1, 1}
   ]
 
-  def load_config(%{type: :matrix} = config) do
+  def new(%{type: :matrix} = config) do
     sanitized_config = Map.take(config, [:origin, :count, :direction, :spacing, :progressive])
     %Matrix{}
     |> Map.merge(sanitized_config)
@@ -38,6 +63,8 @@ defmodule Nerves.Neopixel.Matrix do
     minor_spacing = component_for_direction({x_spacing, y_spacing}, minor)
     [head | next_strips(remaining, head, minor, minor_spacing, progressive)]
   end
+
+  # Private Helpers
 
   defp next_strips(0, _, _, _, _), do: []
   defp next_strips(remaining, prev_strip, minor, minor_spacing, progressive) do

@@ -1,21 +1,29 @@
 defmodule Nerves.Neopixel.HAL do
+  @moduledoc false
+
   use GenServer
 
   alias Nerves.Neopixel.{
     Canvas,
     Channel,
+    Color,
     Config,
+    Point,
     Strip
   }
 
   require Logger
 
   def start_link(opts) do
-    config = load_config(opts)
-    GenServer.start_link(__MODULE__, config, name: __MODULE__)
+    config =
+      opts
+      |> Keyword.get(:config)
+      |> Config.load()
+    subscriber = Keyword.get(opts, :subscriber)
+    GenServer.start_link(__MODULE__, %{config: config, subscriber: subscriber}, name: __MODULE__)
   end
 
-  def init(config) do
+  def init(%{config: config, subscriber: subscriber}) do
     args =
       config.channels
       |> Enum.flat_map(fn ch -> ["#{ch.pin}", "#{Channel.total_count(ch)}", "#{ch.type}"] end)
@@ -29,7 +37,7 @@ defmodule Nerves.Neopixel.HAL do
       :exit_status
     ])
     send(self(), :init_canvas)
-    {:ok, %{ config: config, port: port }}
+    {:ok, %{config: config, port: port, subscriber: subscriber}}
   end
 
   # This is intended to be used for testing.
@@ -58,27 +66,27 @@ defmodule Nerves.Neopixel.HAL do
     {:noreply, state}
   end
 
-  def handle_cast({:set_pixel, {x, y}, {r, g, b, w}}, %{port: port} = state) do
+  def handle_cast({:set_pixel, %Point{x: x, y: y}, %Color{r: r, g: g, b: b, w: w}}, %{port: port} = state) do
     send_to_port("set_pixel #{x} #{y} #{r} #{g} #{b} #{w}\n", port)
     {:noreply, state}
   end
 
-  def handle_cast({:fill, {x, y}, width, height, {r, g, b, w}}, %{port: port} = state) do
+  def handle_cast({:fill, %Point{x: x, y: y}, width, height, %Color{r: r, g: g, b: b, w: w}}, %{port: port} = state) do
     send_to_port("fill #{x} #{y} #{width} #{height} #{r} #{g} #{b} #{w}\n", port)
     {:noreply, state}
   end
 
-  def handle_cast({:copy, {xs, ys}, {xd, yd}, width, height}, %{port: port} = state) do
+  def handle_cast({:copy, %Point{x: xs, y: ys}, %Point{x: xd, y: yd}, width, height}, %{port: port} = state) do
     send_to_port("copy #{xs} #{ys} #{xd} #{yd} #{width} #{height}\n", port)
     {:noreply, state}
   end
 
-  def handle_cast({:copy_blit, {xs, ys}, {xd, yd}, width, height}, %{port: port} = state) do
+  def handle_cast({:copy_blit, %Point{x: xs, y: ys}, %Point{x: xd, y: yd}, width, height}, %{port: port} = state) do
     send_to_port("copy_blit #{xs} #{ys} #{xd} #{yd} #{width} #{height}\n", port)
     {:noreply, state}
   end
 
-  def handle_cast({:blit, {x, y}, width, height, data}, %{port: port} = state) do
+  def handle_cast({:blit, %Point{x: x, y: y}, width, height, data}, %{port: port} = state) do
     base64_data = Base.encode64(data)
     send_to_port("blit #{x} #{y} #{width} #{height} #{String.length(base64_data)} #{base64_data}\n", port)
     {:noreply, state}
@@ -116,12 +124,7 @@ defmodule Nerves.Neopixel.HAL do
     {:noreply, state}
   end
 
-  defp load_config(opts) do
-    case Keyword.get(opts, :config) do
-      nil -> Config.load()
-      config -> Config.load(config)
-    end
-  end
+  # Private Helpers
 
   defp init_canvas(%Canvas{width: width, height: height}, port) do
     "init_canvas #{width} #{height}\n"
