@@ -1,4 +1,4 @@
-defmodule Nerves.Neopixel.Matrix do
+defmodule Nerves.Neopixel.Config.Matrix do
   @moduledoc """
   Represents a contiguous matrix of pixels, composed of liner strips with a
   regular spacing and orientation pattern.
@@ -15,7 +15,7 @@ defmodule Nerves.Neopixel.Matrix do
     expressed as `{x, y}`. (default: `{1, 1}`)
   """
 
-  alias Nerves.Neopixel.{
+  alias Nerves.Neopixel.Config.{
     Matrix,
     Strip
   }

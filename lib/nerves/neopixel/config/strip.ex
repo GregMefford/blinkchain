@@ -1,4 +1,4 @@
-defmodule Nerves.Neopixel.Strip do
+defmodule Nerves.Neopixel.Config.Strip do
   @moduledoc """
   Represents a linear strip of pixels.
 
@@ -11,7 +11,8 @@ defmodule Nerves.Neopixel.Strip do
     along the `direction`. (default: `1`)
   """
 
-  alias Nerves.Neopixel.Strip
+  alias Nerves.Neopixel
+  alias __MODULE__
 
   @typedoc @moduledoc
   @type t :: %__MODULE__{

@@ -4,11 +4,13 @@ defmodule Nerves.Neopixel.HAL do
   use GenServer
 
   alias Nerves.Neopixel.{
-    Canvas,
-    Channel,
     Color,
     Config,
     Point,
+  }
+  alias Nerves.Neopixel.Config.{
+    Canvas,
+    Channel,
     Strip
   }
 

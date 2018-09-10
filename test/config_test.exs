@@ -2,10 +2,10 @@ defmodule Nerves.Neopixel.ConfigTest do
   use ExUnit.Case
 
   alias Nerves.Neopixel
-  alias Neopixel.{
+  alias Nerves.Neopixel.Config
+  alias Neopixel.Config.{
     Canvas,
     Channel,
-    Config,
     Strip
   }
 

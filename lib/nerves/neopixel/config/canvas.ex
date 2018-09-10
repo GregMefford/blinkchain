@@ -1,10 +1,11 @@
-defmodule Nerves.Neopixel.Canvas do
+defmodule Nerves.Neopixel.Config.Canvas do
   @moduledoc """
   # `Nerves.Neopixel.Canvas`
   Represents a virtual drawing canvas of size `width` x `height`
   """
 
-  alias Nerves.Neopixel.Canvas
+  alias Nerves.Neopixel
+  alias __MODULE__
 
   @typedoc @moduledoc
   @type t :: %Canvas{

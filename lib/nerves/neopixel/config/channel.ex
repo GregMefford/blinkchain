@@ -1,4 +1,4 @@
-defmodule Nerves.Neopixel.Channel do
+defmodule Nerves.Neopixel.Config.Channel do
   @pwm_1_pins [12, 18, 40, 52]
   @pwm_2_pins [13, 19, 41, 45, 53]
 
@@ -28,7 +28,8 @@ defmodule Nerves.Neopixel.Channel do
     Valid options: #{inspect @valid_types}
   """
 
-  alias Nerves.Neopixel.{
+  alias Nerves.Neopixel
+  alias Nerves.Neopixel.Config.{
     Channel,
     Matrix,
     Strip

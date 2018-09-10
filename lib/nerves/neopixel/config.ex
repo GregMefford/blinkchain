@@ -3,10 +3,10 @@ defmodule Nerves.Neopixel.Config do
   Represents the placement of the NeoPixel devices on the virtual drawing canvas.
   """
 
-  alias Nerves.Neopixel.{
+  alias Nerves.Neopixel.Config
+  alias Nerves.Neopixel.Config.{
     Canvas,
-    Channel,
-    Config
+    Channel
   }
 
   @typedoc @moduledoc
