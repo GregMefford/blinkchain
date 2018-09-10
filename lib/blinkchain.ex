@@ -1,5 +1,5 @@
-defmodule Nerves.Neopixel do
-  alias Nerves.Neopixel.{
+defmodule Blinkchain do
+  alias Blinkchain.{
     Color,
     HAL,
     Point
@@ -8,7 +8,7 @@ defmodule Nerves.Neopixel do
   require Logger
 
   @moduledoc """
-  # `Nerves.Neopixel`
+  # `Blinkchian`
 
   This module defines the canvas-based drawing API for controlling one or more
   strips or arrays of NeoPixel-compatible RGB or RGBW LEDs. The virtual drawing
@@ -24,10 +24,12 @@ defmodule Nerves.Neopixel do
   > change in a future release, such that the virtual drawing surface would be
   > persistent, even if the given pixels are not associated with physical
   > NeoPixels, to allow for "off-screen" sprite maps for use with
-  > `copy_blit/4`.
+  > `copy_blit/4`. In the meantime, this could be accomplished by configuring
+  > some extra pixels at the end of the chain or on a second channel that don't
+  > actually exist.
 
   The Raspberry Pi supports two simultaneous Pulse-Width Modulation (PWM)
-  channels, which are used by `Nerves.Neopixel` to drive an arbitrary-length
+  channels, which are used by `Blinkchain` to drive an arbitrary-length
   chain of NeoPixels. Each chain must consist of a single type of device (i.e.
   all devices in the chain must have the same number and order of color
   components). Some drawing commands operate on the entire channel (e.g.

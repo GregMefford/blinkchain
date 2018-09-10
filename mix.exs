@@ -1,14 +1,14 @@
-defmodule Nerves.Neopixel.Mixfile do
+defmodule Blinkchain.Mixfile do
   use Mix.Project
 
   @version "1.0.0-dev"
 
   def project do
     [
-      app: :nerves_neopixel,
+      app: :blinkchain,
       version: @version,
       description: "Drive WS2812B \"NeoPixel\" RGB LED strips from a Raspberry Pi using Elixir.",
-      elixir: "~> 1.3",
+      elixir: "~> 1.6",
       make_clean: ["clean"],
       compilers: [:elixir_make, Mix.compilers()],
       build_embedded: Mix.env() == :prod,
@@ -19,7 +19,7 @@ defmodule Nerves.Neopixel.Mixfile do
   end
 
   def application() do
-    [mod: {Nerves.Neopixel.Application, []},
+    [mod: {Blinkchain.Application, []},
      extra_applications: [:logger]]
   end
 

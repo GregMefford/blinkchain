@@ -1,14 +1,14 @@
-defmodule Nerves.Neopixel.HAL do
+defmodule Blinkchain.HAL do
   @moduledoc false
 
   use GenServer
 
-  alias Nerves.Neopixel.{
+  alias Blinkchain.{
     Color,
     Config,
     Point,
   }
-  alias Nerves.Neopixel.Config.{
+  alias Blinkchain.Config.{
     Canvas,
     Channel,
     Strip
@@ -43,7 +43,7 @@ defmodule Nerves.Neopixel.HAL do
   end
 
   # This is intended to be used for testing.
-  # It causes Nerves.Neopixel.HAL to send feedback to the registered process
+  # It causes `Blinkchain.HAL` to send feedback to the registered process
   # whenever it gets output from the rpi_ws281x Port.
   # It's a call instead of a cast so that we can synchronously make sure
   # it got registered before we move on to the next step.
@@ -175,7 +175,7 @@ defmodule Nerves.Neopixel.HAL do
   end
 
   defp rpi_ws281x_path do
-    Path.join(:code.priv_dir(:nerves_neopixel), "rpi_ws281x")
+    Path.join(:code.priv_dir(:blinkchain), "rpi_ws281x")
   end
 
   defp send_to_port(command, port) do

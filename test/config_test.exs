@@ -1,15 +1,14 @@
-defmodule Nerves.Neopixel.ConfigTest do
+defmodule Blinkchain.ConfigTest do
   use ExUnit.Case
 
-  alias Nerves.Neopixel
-  alias Nerves.Neopixel.Config
-  alias Neopixel.Config.{
+  alias Blinkchain.Config
+  alias Blinkchain.Config.{
     Canvas,
     Channel,
     Strip
   }
 
-  describe "Nerves.Neopixel.Config.load" do
+  describe "Blinkchain.Config.load" do
     test "with two channels, each with one Strip" do
       config = [
         canvas: {10, 2},

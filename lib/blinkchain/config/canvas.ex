@@ -1,16 +1,15 @@
-defmodule Nerves.Neopixel.Config.Canvas do
+defmodule Blinkchain.Config.Canvas do
   @moduledoc """
-  # `Nerves.Neopixel.Canvas`
+  # `Blinkchain.Canvas`
   Represents a virtual drawing canvas of size `width` x `height`
   """
 
-  alias Nerves.Neopixel
   alias __MODULE__
 
   @typedoc @moduledoc
   @type t :: %Canvas{
-    width: Neopixel.uint16(),
-    height: Neopixel.uint16()
+    width: Blinkchain.uint16(),
+    height: Blinkchain.uint16()
   }
 
   defstruct [

@@ -1,17 +1,16 @@
-defmodule Nerves.Neopixel.Color do
+defmodule Blinkchain.Color do
   @moduledoc """
   Represents a color with red, green, blue, and (optionally) white components.
   """
 
-  alias Nerves.Neopixel
   alias __MODULE__
 
   @typedoc @moduledoc
   @type t :: %__MODULE__{
-    r: Neopixel.uint8,
-    g: Neopixel.uint8,
-    b: Neopixel.uint8,
-    w: Neopixel.uint8
+    r: Blinkchain.uint8,
+    g: Blinkchain.uint8,
+    b: Blinkchain.uint8,
+    w: Blinkchain.uint8
   }
 
   defstruct r: 0, g: 0, b: 0, w: 0

@@ -1,4 +1,4 @@
-defmodule Nerves.Neopixel.Config.Channel do
+defmodule Blinkchain.Config.Channel do
   @pwm_1_pins [12, 18, 40, 52]
   @pwm_2_pins [13, 19, 41, 45, 53]
 
@@ -8,7 +8,7 @@ defmodule Nerves.Neopixel.Config.Channel do
   ]
 
   @moduledoc """
-  # `Nerves.Neopixel.Channel`
+  # `Blinkchain.Channel`
   Represents a single "chain" of pixels of the same type, connected to the same I/O pin.
 
   * `arrangement`: The list of `t:Strip.t/0` structs that describe each straight section of pixels.
@@ -28,8 +28,7 @@ defmodule Nerves.Neopixel.Config.Channel do
     Valid options: #{inspect @valid_types}
   """
 
-  alias Nerves.Neopixel
-  alias Nerves.Neopixel.Config.{
+  alias Blinkchain.Config.{
     Channel,
     Matrix,
     Strip
@@ -38,8 +37,8 @@ defmodule Nerves.Neopixel.Config.Channel do
   @typedoc @moduledoc
   @type t :: %__MODULE__{
     arrangement: [Strip.t()],
-    brightness: Neopixel.uint8(),
-    gamma: [Neopixel.uint8()],
+    brightness: Blinkchain.uint8(),
+    gamma: [Blinkchain.uint8()],
     invert: boolean(),
     pin: non_neg_integer(),
     type: atom()

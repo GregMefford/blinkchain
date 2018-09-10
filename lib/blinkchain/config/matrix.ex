@@ -1,4 +1,4 @@
-defmodule Nerves.Neopixel.Config.Matrix do
+defmodule Blinkchain.Config.Matrix do
   @moduledoc """
   Represents a contiguous matrix of pixels, composed of liner strips with a
   regular spacing and orientation pattern.
@@ -15,18 +15,18 @@ defmodule Nerves.Neopixel.Config.Matrix do
     expressed as `{x, y}`. (default: `{1, 1}`)
   """
 
-  alias Nerves.Neopixel.Config.{
+  alias Blinkchain.Config.{
     Matrix,
     Strip
   }
 
   @typedoc @moduledoc
   @type t :: %__MODULE__{
-    count: {Neopixel.uint16(), Neopixel.uint16()},
+    count: {Blinkchain.uint16(), Blinkchain.uint16()},
     direction: {Strip.direction(), Strip.direction()},
-    origin: {Neopixel.uint16(), Neopixel.uint16()},
+    origin: {Blinkchain.uint16(), Blinkchain.uint16()},
     progressive: boolean(),
-    spacing: {Neopixel.uint16(), Neopixel.uint16()}
+    spacing: {Blinkchain.uint16(), Blinkchain.uint16()}
   }
 
   defstruct [

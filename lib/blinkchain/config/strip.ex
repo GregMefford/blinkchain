@@ -1,4 +1,4 @@
-defmodule Nerves.Neopixel.Config.Strip do
+defmodule Blinkchain.Config.Strip do
   @moduledoc """
   Represents a linear strip of pixels.
 
@@ -11,15 +11,14 @@ defmodule Nerves.Neopixel.Config.Strip do
     along the `direction`. (default: `1`)
   """
 
-  alias Nerves.Neopixel
   alias __MODULE__
 
   @typedoc @moduledoc
   @type t :: %__MODULE__{
-    count: Neopixel.uint16(),
+    count: Blinkchain.uint16(),
     direction: direction(),
-    origin: {Neopixel.uint16(), Neopixel.uint16()},
-    spacing: Neopixel.uint16()
+    origin: {Blinkchain.uint16(), Blinkchain.uint16()},
+    spacing: Blinkchain.uint16()
   }
 
   defstruct [

@@ -2,11 +2,11 @@ use Mix.Config
 
 config :logger, level: :warn
 
-config :nerves_neopixel,
+config :blinkchain,
   canvas: {1, 1},
   channels: [:channel1]
 
-config :nerves_neopixel, :channel1,
+config :blinkchain, :channel1,
   pin: 18,
   arrangement: [
     %{
