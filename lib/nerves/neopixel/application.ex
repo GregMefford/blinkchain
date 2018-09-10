@@ -1,14 +1,13 @@
 defmodule Nerves.Neopixel.Application do
-  @moduledoc """
-  # `Nerves.Neopixel.Application`
-  """
+  @moduledoc false
 
   use Application
 
-  require Logger
-
   def start(_type, _args) do
-    Logger.debug("Nerves.Neopixel.start")
-    Nerves.Neopixel.Supervisor.start_link([])
+    children = [
+      Nerves.Neopixel.HAL
+    ]
+    opts = [strategy: :one_for_one, name: Nerves.Neopixel.Supervisor]
+    Supervisor.start_link(children, opts)
   end
 end
