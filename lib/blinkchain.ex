@@ -264,7 +264,7 @@ defmodule Blinkchain do
   defp validate_channel_number(val) when val in 0..1, do: :ok
   defp validate_channel_number(_), do: {:error, :invalid, :channel}
 
-  defp validate_gamma(gamma) when is_list(gamma) and length(gamma) == 255 do
+  defp validate_gamma(gamma) when is_list(gamma) and length(gamma) == 256 do
     gamma
     |> Enum.all?(& validate_uint8(&1) == :ok)
     |> case do
