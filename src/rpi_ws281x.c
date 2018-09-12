@@ -209,7 +209,7 @@ void get_pixel(ws2811_channel_t *channels, const canvas_t *canvas) {
         return;
     }
     debug("Called get_pixel(x: %hu, y: %hu)", x, y);
-    if (x >= canvas->width || y >= canvas->height) {
+    if (x + 1 > canvas->width || y + 1 > canvas->height) {
         reply_error("Cannot read from outside canvas dimensions");
         return;
     }
@@ -227,7 +227,7 @@ void set_pixel(ws2811_channel_t *channels, const canvas_t *canvas) {
     // ws2811_led_t is uint32_t: 0xWWRRGGBB
     ws2811_led_t color = (w << 24) | (r << 16) | (g << 8) | b;
     debug("Called set_pixel(x: %hu, y: %hu, color: 0x%08x)", x, y, color);
-    if (x >= canvas->width || y >= canvas->height) {
+    if (x + 1 > canvas->width || y + 1 > canvas->height) {
         reply_error("Cannot draw outside canvas dimensions");
         return;
     }
@@ -246,7 +246,7 @@ void fill(ws2811_channel_t *channels, const canvas_t *canvas) {
     // ws2811_led_t is uint32_t: 0xWWRRGGBB
     ws2811_led_t color = (w << 24) | (r << 16) | (g << 8) | b;
     debug("Called fill(x: %hu, y: %hu, width: %hu, height: %hu, color: 0x%08x)", x, y, width, height, color);
-    if (x >= canvas->width || y >= canvas->height || x + width >= canvas->width || y + height >= canvas->height) {
+    if (x + width > canvas->width || y + height > canvas->height) {
         reply_error("Cannot draw outside canvas dimensions");
         return;
     }
@@ -260,7 +260,7 @@ void fill(ws2811_channel_t *channels, const canvas_t *canvas) {
 
 void copy(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t width, uint16_t height, bool copy_null, ws2811_channel_t *channels, const canvas_t *canvas) {
     debug("Called copy%s(xs: %hu, ys: %hu, xd: %hu, yd: %hu, width: %hu, height: %hu)", copy_null ? "" : "_blit", xs, ys, xd, yd, width, height);
-    if (xs + width >= canvas->width || ys + height >= canvas->height || xd + width >= canvas->width || yd + height >= canvas->height) {
+    if (xs + width > canvas->width || ys + height > canvas->height || xd + width > canvas->width || yd + height > canvas->height) {
         reply_error("Cannot draw outside canvas dimensions");
         return;
     }
@@ -284,7 +284,7 @@ void copy(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t width, ui
 
 void blit(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *data, ws2811_channel_t *channels, const canvas_t *canvas) {
     debug("Called blit(x: %hu, y: %hu, width: %hu, height: %hu, data: <binary>)", x, y, width, height);
-    if (x + width >= canvas->width || y + height >= canvas->height) {
+    if (x + width > canvas->width || y + height > canvas->height) {
         reply_error("Cannot draw outside canvas dimensions");
         return;
     }
