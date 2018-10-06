@@ -3,7 +3,7 @@ defmodule Nerves.Neopixel.Mixfile do
 
   def project do
    [app: :nerves_neopixel,
-    version: "0.3.2",
+    version: "0.4.0",
     description: "Drive WS2812B \"NeoPixel\" RGB LED strips from a Raspberry Pi using Elixir.",
     elixir: "~> 1.3",
     make_clean: ["clean"],
