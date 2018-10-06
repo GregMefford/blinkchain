@@ -15,7 +15,7 @@ Add it to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
-      [{:nerves_neopixel, "~> 0.3.2"}]
+      [{:nerves_neopixel, "~> 0.4"}]
     end
     ```
 
