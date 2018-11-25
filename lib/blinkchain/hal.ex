@@ -3,6 +3,8 @@ defmodule Blinkchain.HAL do
 
   use GenServer
 
+  require Logger
+
   alias Blinkchain.{
     Color,
     Config,
@@ -14,7 +16,9 @@ defmodule Blinkchain.HAL do
     Strip
   }
 
-  require Logger
+  defmodule State do
+    defstruct [:config, :port, :subscriber]
+  end
 
   def start_link(opts) do
     config =
@@ -39,7 +43,7 @@ defmodule Blinkchain.HAL do
       :exit_status
     ])
     send(self(), :init_canvas)
-    {:ok, %{config: config, port: port, subscriber: subscriber}}
+    {:ok, %State{config: config, port: port, subscriber: subscriber}}
   end
 
   # This is intended to be used for testing.
@@ -48,55 +52,47 @@ defmodule Blinkchain.HAL do
   # It's a call instead of a cast so that we can synchronously make sure
   # it got registered before we move on to the next step.
   def handle_call(:subscribe, {from, _ref}, state) do
-    {:reply, :ok, Map.put(state, :subscriber, from)}
+    {:reply, :ok, %State{state | subscriber: from}}
   end
 
   # This is intended to be used for testing. It doesn't do anything useful
   # in a real application.
-  def handle_cast(:print_topology, %{port: port} = state) do
-    send_to_port("print_topology\n", port)
-    {:noreply, state}
+  def handle_call(:print_topology, {_from, _ref}, state) do
+    {:reply, send_to_port("print_topology\n", state.port), state}
   end
 
-  def handle_cast({:set_brightness, channel, brightness}, %{port: port} = state) do
-    send_to_port("set_brightness #{channel} #{brightness}\n", port)
-    {:noreply, state}
+  def handle_call({:set_brightness, channel, brightness}, {_from, _ref}, state) do
+    {:reply, send_to_port("set_brightness #{channel} #{brightness}\n", state.port), state}
   end
 
-  def handle_cast({:set_gamma, channel, gamma}, %{port: port} = state) do
-    send_to_port("set_gamma #{channel} #{Base.encode64(gamma)}\n", port)
-    {:noreply, state}
+  def handle_call({:set_gamma, channel, gamma}, {_from, _ref}, state) do
+    {:reply, send_to_port("set_gamma #{channel} #{Base.encode64(gamma)}\n", state.port), state}
   end
 
-  def handle_cast({:set_pixel, %Point{x: x, y: y}, %Color{r: r, g: g, b: b, w: w}}, %{port: port} = state) do
-    send_to_port("set_pixel #{x} #{y} #{r} #{g} #{b} #{w}\n", port)
-    {:noreply, state}
+  def handle_call({:set_pixel, %Point{x: x, y: y}, %Color{r: r, g: g, b: b, w: w}}, {_from, _ref}, state) do
+    {:reply, send_to_port("set_pixel #{x} #{y} #{r} #{g} #{b} #{w}\n", state.port), state}
   end
 
-  def handle_cast({:fill, %Point{x: x, y: y}, width, height, %Color{r: r, g: g, b: b, w: w}}, %{port: port} = state) do
-    send_to_port("fill #{x} #{y} #{width} #{height} #{r} #{g} #{b} #{w}\n", port)
-    {:noreply, state}
+  def handle_call({:fill, %Point{x: x, y: y}, width, height, %Color{r: r, g: g, b: b, w: w}}, {_from, _ref}, state) do
+    {:reply, send_to_port("fill #{x} #{y} #{width} #{height} #{r} #{g} #{b} #{w}\n", state.port), state}
   end
 
-  def handle_cast({:copy, %Point{x: xs, y: ys}, %Point{x: xd, y: yd}, width, height}, %{port: port} = state) do
-    send_to_port("copy #{xs} #{ys} #{xd} #{yd} #{width} #{height}\n", port)
-    {:noreply, state}
+  def handle_call({:copy, %Point{x: xs, y: ys}, %Point{x: xd, y: yd}, width, height}, {_from, _ref}, state) do
+    {:reply, send_to_port("copy #{xs} #{ys} #{xd} #{yd} #{width} #{height}\n", state.port), state}
   end
 
-  def handle_cast({:copy_blit, %Point{x: xs, y: ys}, %Point{x: xd, y: yd}, width, height}, %{port: port} = state) do
-    send_to_port("copy_blit #{xs} #{ys} #{xd} #{yd} #{width} #{height}\n", port)
-    {:noreply, state}
+  def handle_call({:copy_blit, %Point{x: xs, y: ys}, %Point{x: xd, y: yd}, width, height}, {_from, _ref}, state) do
+    {:reply, send_to_port("copy_blit #{xs} #{ys} #{xd} #{yd} #{width} #{height}\n", state.port), state}
   end
 
-  def handle_cast({:blit, %Point{x: x, y: y}, width, height, data}, %{port: port} = state) do
+  def handle_call({:blit, %Point{x: x, y: y}, width, height, data}, {_from, _ref}, state) do
     base64_data = Base.encode64(data)
-    send_to_port("blit #{x} #{y} #{width} #{height} #{String.length(base64_data)} #{base64_data}\n", port)
-    {:noreply, state}
+    length = String.length(base64_data)
+    {:reply, send_to_port("blit #{x} #{y} #{width} #{height} #{length} #{base64_data}\n", state.port), state}
   end
 
-  def handle_cast(:render, %{port: port} = state) do
-    send_to_port("render\n", port)
-    {:noreply, state}
+  def handle_call(:render, {_from, _ref}, state) do
+    {:reply, send_to_port("render\n", state.port), state}
   end
 
   def handle_info(:init_canvas, %{config: config, port: port} = state) do
@@ -109,8 +105,8 @@ defmodule Blinkchain.HAL do
   end
 
   def handle_info({_port, {:data, {_, message}}}, state) do
-    Logger.debug(fn -> "Reply from rpi_ws281x: <- #{inspect to_string(message)}" end)
-    notify(state[:subscriber], to_string(message))
+    Logger.debug(fn -> "Message from rpi_ws281x: <- #{inspect to_string(message)}" end)
+    notify(state.subscriber, to_string(message))
     {:noreply, state}
   end
 
@@ -118,6 +114,7 @@ defmodule Blinkchain.HAL do
     {:stop, "rpi_ws281x OS process died with status: #{inspect exit_status}", state}
   end
 
+  # TODO: This shoud be removed once the API is all figured out.
   def handle_info(message, state) do
     Logger.error("Unhandled message: #{inspect message}")
     {:noreply, state}
@@ -179,6 +176,17 @@ defmodule Blinkchain.HAL do
   defp send_to_port(command, port) do
     Logger.debug(fn -> "Sending to rpi_ws281x: -> #{inspect command}" end)
     Port.command(port, command)
+    receive_from_port(port)
+  end
+
+  defp receive_from_port(port) do
+    receive do
+      {^port, {:data, {_, 'OK: ' ++ response}}} -> {:ok, to_string(response)}
+      {^port, {:data, {_, 'OK'}}} -> :ok
+      {^port, {:data, {_, 'ERR: ' ++ response}}} -> {:error, to_string(response)}
+      {^port, {:exit_status, exit_status}} -> raise "rpi_ws281x OS process died with status: #{inspect exit_status}"
+    after 500 -> raise "timeout waiting for rpi_ws281x OS process to reply"
+    end
   end
 
   defp notify(nil, _message), do: :ok

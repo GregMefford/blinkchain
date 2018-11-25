@@ -155,16 +155,16 @@ void set_gamma(ws2811_channel_t *channels) {
     free(base64_buffer);
     if (decoded_size != 4 * 256) {
         reply_error("Size of gamma table must be 4 * 256 bytes");
-        free(data);
-        return;
     }
-    if (channel > 1) {
+    else if (channel > 1) {
         reply_error("Channel must be 0 or 1");
-        return;
     }
-    debug("Called set_gamma(channel: %hhu, gamma: <binary>)", channel);
-    channels[channel].gamma = data;
-    reply_ok();
+    else {
+        debug("Called set_gamma(channel: %hhu, gamma: <binary>)", channel);
+        channels[channel].gamma = data;
+        reply_ok();
+    }
+    free(data);
 }
 
 ws2811_led_t read_pixel(uint16_t x, uint16_t y, ws2811_channel_t *channels, const canvas_t *canvas) {
@@ -256,9 +256,16 @@ void fill(ws2811_channel_t *channels, const canvas_t *canvas) {
             write_pixel(x + col, y + row, color, channels, canvas);
         }
     }
+    reply_ok();
 }
 
-void copy(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t width, uint16_t height, bool copy_null, ws2811_channel_t *channels, const canvas_t *canvas) {
+void copy(bool copy_null, ws2811_channel_t *channels, const canvas_t *canvas) {
+    uint16_t xs, ys, xd, yd, width, height;
+    char nl;
+    if (scanf("%hu %hu %hu %hu %hu %hu%c", &xs, &ys, &xd, &yd, &width, &height, &nl) != 7 || nl != '\n') {
+        reply_error("Argument error");
+        return;
+    }
     debug("Called copy%s(xs: %hu, ys: %hu, xd: %hu, yd: %hu, width: %hu, height: %hu)", copy_null ? "" : "_blit", xs, ys, xd, yd, width, height);
     if (xs + width > canvas->width || ys + height > canvas->height || xd + width > canvas->width || yd + height > canvas->height) {
         reply_error("Cannot draw outside canvas dimensions");
@@ -280,26 +287,52 @@ void copy(uint16_t xs, uint16_t ys, uint16_t xd, uint16_t yd, uint16_t width, ui
                 write_pixel(xd + col, yd + row, color, channels, canvas);
         }
     }
+    reply_ok();
 }
 
-void blit(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *data, ws2811_channel_t *channels, const canvas_t *canvas) {
-    debug("Called blit(x: %hu, y: %hu, width: %hu, height: %hu, data: <binary>)", x, y, width, height);
-    if (x + width > canvas->width || y + height > canvas->height) {
-        reply_error("Cannot draw outside canvas dimensions");
+void blit(ws2811_channel_t *channels, const canvas_t *canvas) {
+    uint16_t x, y, width, height;
+    uint32_t base64_size;
+    if (scanf("%hu %hu %hu %hu %u ", &x, &y, &width, &height, &base64_size) != 5) {
+        reply_error("Argument error");
         return;
     }
-    uint16_t row, col;
-    ws2811_led_t color;
-    for(row = 0; row < height; row++) {
-        for(col = 0; col < width; col++, data += 4) {
-            // ws2811_led_t is uint32_t: 0xWWRRGGBB
-            // so data should look like [0xWW, 0xRR, 0xGG, 0xBB]
-            color = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
-            // Ignore totally black pixels in the source image to allow simple sprite masking.
-            if (color != 0x00000000)
-                write_pixel(x + col, y + row, color, channels, canvas);
-        }
+    char format[16], nl;
+    sprintf(format, "%%%us%%c", base64_size);
+    char *base64_buffer = malloc(base64_size + 1);
+    if (scanf(format, base64_buffer, &nl) != 2 || nl != '\n') {
+        free(base64_buffer);
+        reply_error("Unable to read base64-encoded binary");
+        return;
     }
+    debug("Called blit(x: %hu, y: %hu, width: %hu, height: %hu, data: %s)", x, y, width, height, base64_buffer);
+
+    int decoded_size;
+    uint8_t *data = unbase64(base64_buffer, strlen(base64_buffer), &decoded_size);
+    free(base64_buffer);
+    // Each pixel should have 4 8-bit color channels
+    if (decoded_size != width * height * 4) {
+        reply_error("Size of binary data didn't match the width and height");
+    }
+    else if (x + width > canvas->width || y + height > canvas->height) {
+        reply_error("Cannot draw outside canvas dimensions");
+    }
+    else {
+        uint16_t row, col, offset = 0;
+        ws2811_led_t color;
+        for(row = 0; row < height; row++) {
+            for(col = 0; col < width; col++, offset += 4) {
+                // ws2811_led_t is uint32_t: 0xWWRRGGBB
+                // so data should look like [0xWW, 0xRR, 0xGG, 0xBB]
+                color = data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3];
+                // Ignore totally black pixels in the source image to allow simple sprite masking.
+                if (color != 0x00000000)
+                    write_pixel(x + col, y + row, color, channels, canvas);
+            }
+        }
+        reply_ok();
+    }
+    free(data);
 }
 
 int main(int argc, char *argv[]) {
@@ -390,42 +423,19 @@ int main(int argc, char *argv[]) {
             fill(ledstring.channel, &canvas);
 
         } else if (strcasecmp(buffer, "copy") == 0) {
-            uint16_t xs, ys, xd, yd, w, h;
-            char nl;
-            if (scanf("%hu %hu %hu %hu %hu %hu%c", &xs, &ys, &xd, &yd, &w, &h, &nl) != 7 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in copy command");
-            copy(xs, ys, xd, yd, w, h, true, ledstring.channel, &canvas);
+            copy(true, ledstring.channel, &canvas);
 
         } else if (strcasecmp(buffer, "blit") == 0) {
-            uint16_t x, y, width, height;
-            uint32_t base64_size;
-            if (scanf("%hu %hu %hu %hu %u ", &x, &y, &width, &height, &base64_size) != 5)
-                errx(EXIT_FAILURE, "Argument error in blit command");
-            char format[16], nl;
-            sprintf(format, "%%%us%%c", base64_size);
-            char *base64_buffer = malloc(base64_size + 1);
-            if (scanf(format, base64_buffer, &nl) != 2 || nl != '\n')
-                errx(EXIT_FAILURE, "Unable to read base64-encoded binary from blit command");
-            int decoded_size;
-            uint8_t *data = unbase64(base64_buffer, strlen(base64_buffer), &decoded_size);
-            if (decoded_size != width * height * 4) // Each pixel should have 4 8-bit color channels
-                errx(EXIT_FAILURE, "Size of binary data didn't match the width and height in blit command");
-            debug("Base64-encoded blit data: %s", base64_buffer);
-            free(base64_buffer);
-            blit(x, y, width, height, data, ledstring.channel, &canvas);
-            free(data);
+            blit(ledstring.channel, &canvas);
 
         } else if (strcasecmp(buffer, "copy_blit") == 0) {
-            uint16_t xs, ys, xd, yd, w, h;
-            char nl;
-            if (scanf("%hu %hu %hu %hu %hu %hu%c", &xs, &ys, &xd, &yd, &w, &h, &nl) != 7 || nl != '\n')
-                errx(EXIT_FAILURE, "Argument error in copy_blit command");
-            copy(xs, ys, xd, yd, w, h, false, ledstring.channel, &canvas);
+            copy(false, ledstring.channel, &canvas);
 
         } else if (strcasecmp(buffer, "render") == 0) {
             ws2811_return_t result = ws2811_render(&ledstring);
             if (result != WS2811_SUCCESS)
                 errx(EXIT_FAILURE, "ws2811_render failed: %d (%s)", result, ws2811_get_return_t_str(result));
+            reply_ok();
 
         } else if (strcasecmp(buffer, "print_topology") == 0) {
             debug("Called print_topology()");

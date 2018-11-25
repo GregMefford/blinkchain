@@ -44,7 +44,7 @@ defmodule Blinkchain.Mixfile do
       ],
       maintainers: ["Greg Mefford"],
       licenses: ["MIT", "BSD 2-Clause"],
-      links: %{"GitHub" => "https://github.com/GregMefford/nerves_neopixel"}
+      links: %{"GitHub" => "https://github.com/GregMefford/blinkchain"}
     ]
   end
 end

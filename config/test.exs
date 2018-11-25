@@ -1,6 +1,8 @@
 use Mix.Config
 
-config :logger, level: :warn
+log_level = System.get_env("LOG_LEVEL")
+
+config :logger, level: String.to_atom(log_level || "warn")
 
 config :blinkchain,
   canvas: {1, 1}

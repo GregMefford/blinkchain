@@ -241,7 +241,7 @@ defmodule Blinkchain.BlinkchainTest do
       Blinkchain.fill(%Point{x: 3, y: 0}, 3, 2, %Color{r: 255, g:   0, b:   0, w:   0})
 
       :ok = Blinkchain.blit(%Point{x: 3, y: 0}, 3, 2, data)
-      assert_receive "DBG: Called blit(x: 3, y: 0, width: 3, height: 2, data: <binary>)"
+      assert_receive "DBG: Called blit(x: 3, y: 0, width: 3, height: 2, data: AAAAAAAAAP8AAAAAAAAA/wAAAAAAAAD/)"
 
       Blinkchain.render()
       assert_receive "DBG: Called render()"
@@ -260,7 +260,7 @@ defmodule Blinkchain.BlinkchainTest do
           0, 0, 0, 255,   0, 0, 0,   0,   0, 0, 0, 255
         >>
       Blinkchain.blit({3, 0}, 3, 2, data)
-      assert_receive "DBG: Called blit(x: 3, y: 0, width: 3, height: 2, data: <binary>)"
+      assert_receive "DBG: Called blit(x: 3, y: 0, width: 3, height: 2, data: AAAAAAAAAP8AAAAAAAAA/wAAAAAAAAD/)"
     end
 
   end

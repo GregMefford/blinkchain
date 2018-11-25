@@ -61,7 +61,7 @@ defmodule Blinkchain do
     with \
       :ok <- validate_channel_number(channel),
       :ok <- validate_uint8(brightness, :brightness),
-    do: GenServer.cast(HAL, {:set_brightness, channel, brightness})
+    do: GenServer.call(HAL, {:set_brightness, channel, brightness})
   end
 
   @doc """
@@ -78,7 +78,7 @@ defmodule Blinkchain do
     with \
       :ok <- validate_channel_number(channel),
       :ok <- validate_gamma(gamma),
-    do: GenServer.cast(HAL, {:set_gamma, channel, gamma})
+    do: GenServer.call(HAL, {:set_gamma, channel, gamma})
   end
 
   @doc """
@@ -95,7 +95,7 @@ defmodule Blinkchain do
     with \
       :ok <- validate_point(point),
       :ok <- validate_color(color),
-    do: GenServer.cast(HAL, {:set_pixel, point, color})
+    do: GenServer.call(HAL, {:set_pixel, point, color})
   end
   def set_pixel({x, y}, color), do: set_pixel(%Point{x: x, y: y}, color)
   def set_pixel(point, {r, g, b}), do: set_pixel(point, %Color{r: r, g: g, b: b})
@@ -122,7 +122,7 @@ defmodule Blinkchain do
       :ok <- validate_uint16(width, :width),
       :ok <- validate_uint16(height, :height),
       :ok <- validate_color(color),
-    do: GenServer.cast(HAL, {:fill, origin, width, height, color})
+    do: GenServer.call(HAL, {:fill, origin, width, height, color})
   end
   def fill({x, y}, width, height, color), do: fill(%Point{x: x, y: y}, width, height, color)
   def fill(origin, width, height, {r, g, b}), do: fill(origin, width, height, %Color{r: r, g: g, b: b})
@@ -148,7 +148,7 @@ defmodule Blinkchain do
       :ok <- validate_point(destination, :destination),
       :ok <- validate_uint16(width, :width),
       :ok <- validate_uint16(height, :height),
-    do: GenServer.cast(HAL, {:copy, source, destination, width, height})
+    do: GenServer.call(HAL, {:copy, source, destination, width, height})
   end
   def copy({x, y}, destination, width, height), do: copy(%Point{x: x, y: y}, destination, width, height)
   def copy(source, {x, y}, width, height), do: copy(source, %Point{x: x, y: y}, width, height)
@@ -178,7 +178,7 @@ defmodule Blinkchain do
       :ok <- validate_point(destination, :destination),
       :ok <- validate_uint16(width, :width),
       :ok <- validate_uint16(height, :height),
-    do: GenServer.cast(HAL, {:copy_blit, source, destination, width, height})
+    do: GenServer.call(HAL, {:copy_blit, source, destination, width, height})
   end
   def copy_blit({x, y}, destination, width, height), do: copy_blit(%Point{x: x, y: y}, destination, width, height)
   def copy_blit(source, {x, y}, width, height), do: copy_blit(source, %Point{x: x, y: y}, width, height)
@@ -214,7 +214,7 @@ defmodule Blinkchain do
       :ok <- validate_uint16(width, :width),
       :ok <- validate_uint16(height, :height),
       :ok <- validate_data(data, width * height),
-    do: GenServer.cast(HAL, {:blit, destination, width, height, normalize_data(data)})
+    do: GenServer.call(HAL, {:blit, destination, width, height, normalize_data(data)})
   end
   def blit({x, y}, width, height, data), do: blit(%Point{x: x, y: y}, width, height, data)
 
@@ -223,7 +223,7 @@ defmodule Blinkchain do
   configured locations in the virtual canvas.
   """
   @spec render() :: :ok
-  def render, do: GenServer.cast(HAL, :render)
+  def render, do: GenServer.call(HAL, :render)
 
   # Helpers
 
