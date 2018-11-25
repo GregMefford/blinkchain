@@ -40,7 +40,7 @@ config :nerves_firmware_ssh,
 
 config :nerves_init_gadget,
   ifname: "usb0",
-  address_method: :linklocal,
+  address_method: :dhcpd,
   mdns_domain: "nerves.local",
   node_name: nil,
   node_host: :mdns_domain,
