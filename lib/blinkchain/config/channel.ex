@@ -1,6 +1,6 @@
 defmodule Blinkchain.Config.Channel do
-  @pwm_1_pins [12, 18, 40, 52]
-  @pwm_2_pins [13, 19, 41, 45, 53]
+  @pwm_0_pins [12, 18, 40, 52]
+  @pwm_1_pins [13, 19, 41, 45, 53]
 
   @valid_types [
     :rgb, :rbg, :grb, :gbr, :brg, :bgr,
@@ -17,11 +17,12 @@ defmodule Blinkchain.Config.Channel do
     Specified as a list of 256 integer values between 0 and 255, which will be indexed to transform each color channel
     from the canvas to the hardware pixels.
   * `invert`: Whether to invert the PWM signal sent to the I/O pin (required by some hardware types (default: `false`).
+  * `number`: Which PWM block to use (must be 0 or 1)
   * `pin`: The I/O pin number to use for this channel (default: 18)
     Only certain I/O pins are supported and only one pin from each PWM hardware block can be used simultaneously.
     Reference the `BCM` pin numbers on https://pinout.xyz/ for physical pin locations.
+    * Available pins for PWM block 0: #{inspect @pwm_0_pins}
     * Available pins for PWM block 1: #{inspect @pwm_1_pins}
-    * Available pins for PWM block 1: #{inspect @pwm_2_pins}
   * `type`: The order of color channels to send to each pixel. (default: :gbr)
     You may have to experiment to determine the correct setting for your pixel hardware, for example, by setting a
     pixel to full-intensity for each color channel one-by-one and seeing which color actually lights up.
@@ -40,6 +41,7 @@ defmodule Blinkchain.Config.Channel do
     brightness: Blinkchain.uint8(),
     gamma: [Blinkchain.uint8()],
     invert: boolean(),
+    number: Blinkchain.channel_number(),
     pin: non_neg_integer(),
     type: atom()
   }
@@ -49,16 +51,16 @@ defmodule Blinkchain.Config.Channel do
     brightness: 255,
     gamma: nil,
     invert: false,
-    pin: 18,
+    number: nil,
+    pin: 0,
     type: :gbr
   ]
 
   @doc "Build a `t:Channel.t/0` struct from given configuration options"
-  @spec new(Keyword.t()) :: Channel.t()
-  def new(channel_config) do
-    if is_nil(pwm_channel(channel_config[:pin])), do: raise "Each channel must specify a PWM-capable I/O :pin"
-
-    %Channel{}
+  @spec new(Keyword.t(), Blinkchain.channel_number()) :: Channel.t()
+  def new(nil, number) when number in [0, 1], do: %Channel{number: number}
+  def new(channel_config, number) when number in [0,1] do
+    %Channel{number: number}
     |> set_arrangement(Keyword.get(channel_config, :arrangement))
     |> set_brightness(Keyword.get(channel_config, :brightness))
     |> set_gamma(Keyword.get(channel_config, :gamma))
@@ -68,10 +70,10 @@ defmodule Blinkchain.Config.Channel do
   end
 
   @doc "Return the hardware PWM channel for a `t:Channel.t/0` or I/O pin"
-  @spec pwm_channel(Channel.t() | non_neg_integer()) :: 1 | 2 | nil
+  @spec pwm_channel(Channel.t() | non_neg_integer()) :: 0 | 1 | nil
   def pwm_channel(%Channel{pin: pin}), do: pwm_channel(pin)
+  def pwm_channel(pin) when pin in @pwm_0_pins, do: 0
   def pwm_channel(pin) when pin in @pwm_1_pins, do: 1
-  def pwm_channel(pin) when pin in @pwm_2_pins, do: 2
   def pwm_channel(_), do: nil
 
   @doc "Count the total number of pixels in the channel"
@@ -118,12 +120,20 @@ defmodule Blinkchain.Config.Channel do
     raise "Channel :invert must be true or false"
   end
 
-  defp set_pin(channel, nil), do: channel
-  defp set_pin(channel, pin) when pin in @pwm_1_pins or pin in @pwm_2_pins do
-    %Channel{channel | pin: pin}
+  defp set_pin(%Channel{number: 0} = channel, pin) do
+    if pin in @pwm_0_pins do
+      %Channel{channel | pin: pin}
+    else
+      raise "Channel 0 :pin must be in #{inspect @pwm_0_pins}"
+    end
   end
-  defp set_pin(_channel, _pin) do
-    raise "Channel :pin must be in #{inspect @pwm_1_pins} or #{inspect @pwm_2_pins}"
+
+  defp set_pin(%Channel{number: 1} = channel, pin) do
+    if pin in @pwm_1_pins do
+      %Channel{channel | pin: pin}
+    else
+      raise "Channel 1 :pin must be in #{inspect @pwm_1_pins}"
+    end
   end
 
   defp set_type(channel, nil), do: channel

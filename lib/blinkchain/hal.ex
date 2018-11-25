@@ -27,10 +27,10 @@ defmodule Blinkchain.HAL do
 
   def init(%{config: config, subscriber: subscriber}) do
     args =
-      config.channels
+      [config.channel0, config.channel1]
       |> Enum.flat_map(fn ch -> ["#{ch.pin}", "#{Channel.total_count(ch)}", "#{ch.type}"] end)
 
-    Logger.debug("Opening rpi_ws281x Port")
+    Logger.debug("Opening rpi_ws281x Port (args: #{inspect args})")
     port = Port.open({:spawn_executable, rpi_ws281x_path()}, [
       {:args, args},
       {:line, 1024},
@@ -101,12 +101,9 @@ defmodule Blinkchain.HAL do
 
   def handle_info(:init_canvas, %{config: config, port: port} = state) do
     Logger.debug("Initializing canvas")
-    config.canvas
-    |> init_canvas(port)
-
-    config.channels
-    |> Enum.with_index()
-    |> Enum.each(fn {channel, channel_number} -> init_channel(channel_number, channel, port) end)
+    init_canvas(config.canvas, port)
+    init_channel(0, config.channel0, port)
+    init_channel(1, config.channel1, port)
 
     {:noreply, state}
   end
@@ -133,6 +130,7 @@ defmodule Blinkchain.HAL do
     |> send_to_port(port)
   end
 
+  defp init_channel(_, nil, _port), do: nil
   defp init_channel(channel_num, %Channel{} = channel, port) do
     invert = if channel.invert, do: 1, else: 0
     "set_invert #{channel_num} #{invert}\n"

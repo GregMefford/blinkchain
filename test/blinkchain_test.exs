@@ -13,10 +13,10 @@ defmodule Blinkchain.BlinkchainTest do
 
   # Arrangement looks like this:
   # Y  X: 0  1  2  3  4  5  6  7
-  # 0  [  0  1  2  3  4  5  6  7 ] <- Adafruit NeoPixel Stick on Channel 1 (offset 0)
+  # 0  [  0  1  2  3  4  5  6  7 ] <- Adafruit NeoPixel Stick on Channel 0 (pin 18)
   #    |-------------------------|
   # 1  |  0  1  2  3  4  5  6  7 |
-  # 2  |  8  9 10 11 12 13 14 15 | <- Pimoroni Unicorn pHat on Channel 2 (offset 1)
+  # 2  |  8  9 10 11 12 13 14 15 | <- Pimoroni Unicorn pHat on Channel 1 (pin 13)
   # 3  | 16 17 18 19 20 21 22 23 |
   # 4  | 24 25 26 27 28 29 30 31 |
   #    |-------------------------|
@@ -286,9 +286,8 @@ defmodule Blinkchain.BlinkchainTest do
   defp neopixel_stick_and_unicorn_phat_config do
     [
       canvas: {8, 5},
-      channels: [:channel1, :channel2],
-      channel1: [
-        pin: 13,
+      channel0: [
+        pin: 18,
         arrangement: [
           %{
             type: :strip,
@@ -298,8 +297,8 @@ defmodule Blinkchain.BlinkchainTest do
           }
         ]
       ],
-      channel2: [
-        pin: 18,
+      channel1: [
+        pin: 13,
         arrangement: [
           %{
             type: :matrix,

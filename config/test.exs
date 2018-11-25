@@ -3,10 +3,9 @@ use Mix.Config
 config :logger, level: :warn
 
 config :blinkchain,
-  canvas: {1, 1},
-  channels: [:channel1]
+  canvas: {1, 1}
 
-config :blinkchain, :channel1,
+config :blinkchain, :channel0,
   pin: 18,
   arrangement: [
     %{

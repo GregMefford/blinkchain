@@ -12,12 +12,14 @@ defmodule Blinkchain.Config do
   @typedoc @moduledoc
   @type t :: %__MODULE__{
     canvas: Canvas.t(),
-    channels: [Channel.t()]
+    channel0: Channel.t(),
+    channel1: Channel.t()
   }
 
   defstruct [
     :canvas,
-    :channels
+    :channel0,
+    :channel1
   ]
 
   @doc """
@@ -35,15 +37,20 @@ defmodule Blinkchain.Config do
       |> Keyword.get(:canvas)
       |> load_canvas_config()
 
-    channels =
+    channel0 =
       config
-      |> Keyword.get(:channels)
-      |> load_channels_config(config)
-      |> validate_channels()
+      |> Keyword.get(:channel0)
+      |> Channel.new(0)
+
+    channel1 =
+      config
+      |> Keyword.get(:channel1)
+      |> Channel.new(1)
 
     %Config{
       canvas: canvas,
-      channels: channels,
+      channel0: channel0,
+      channel1: channel1
     }
   end
 
@@ -52,27 +59,4 @@ defmodule Blinkchain.Config do
   defp load_canvas_config({width, height}), do: Canvas.new(width, height)
   defp load_canvas_config(_), do: raise ":blinkchain :canvas dimensions must be configured as {width, height}"
 
-  defp load_channels_config(channel_names, config) when is_list(channel_names) do
-    Enum.map(channel_names, & load_channel_config(config, &1))
-  end
-  defp load_channels_config(_, _) do
-    raise "You must configure a list of :channels for :blinkchain"
-  end
-
-  defp load_channel_config(config, name) do
-    config
-    |> Keyword.get(name)
-    |> case do
-      nil -> raise "Missing configuration for channel #{name}"
-      channel_config -> Channel.new(channel_config)
-    end
-  end
-
-  defp validate_channels(channels) do
-    pwm_channels = Enum.map(channels, & Channel.pwm_channel/1)
-    if (Enum.dedup(pwm_channels) != pwm_channels) do
-      raise "Each channel must have a :pin from a different hardware PWM channel"
-    end
-    channels
-  end
 end
