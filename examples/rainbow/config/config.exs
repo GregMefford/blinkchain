@@ -5,6 +5,10 @@
 # is restricted to this project.
 use Mix.Config
 
+# This is imported seprately so you can clearly see which parts of the config
+# are specific to Blinkchain.
+import_config "blinkchain.exs"
+
 # Customize non-Elixir parts of the firmware. See
 # https://hexdocs.pm/nerves/advanced-configuration.html for details.
 config :nerves, :firmware, rootfs_overlay: "rootfs_overlay"
@@ -42,9 +46,7 @@ config :nerves_init_gadget,
   ifname: "usb0",
   address_method: :dhcpd,
   mdns_domain: "nerves.local",
-  node_name: nil,
-  node_host: :mdns_domain,
-  ssh_console_port: 22
+  node_host: :mdns_domain
 
 # Import target specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

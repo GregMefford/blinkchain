@@ -24,8 +24,7 @@ defmodule Rainbow.Application do
 
   def children(_target) do
     [
-      # Starts a worker by calling: Rainbow.Worker.start_link(arg)
-      # {Rainbow.Worker, arg},
+      Rainbow.Worker
     ]
   end
 end
