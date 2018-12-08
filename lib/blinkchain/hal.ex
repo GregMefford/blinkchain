@@ -33,14 +33,20 @@ defmodule Blinkchain.HAL do
   end
 
   def init(%{config: config, subscriber: subscriber}) do
-    args =
-      [config.channel0, config.channel1]
-      |> Enum.flat_map(fn ch -> ["#{ch.pin}", "#{Channel.total_count(ch)}", "#{ch.type}"] end)
+    filename =
+      :blinkchain
+      |> :code.priv_dir()
+      |> Path.join("rpi_ws281x")
+      |> String.to_charlist()
 
-    Logger.debug("Opening rpi_ws281x Port (args: #{inspect(args)})")
+    args =
+      Enum.flat_map(
+        [config.channel0, config.channel1],
+        fn ch -> ["#{ch.pin}", "#{Channel.total_count(ch)}", "#{ch.type}"] end
+      )
 
     port =
-      Port.open({:spawn_executable, rpi_ws281x_path()}, [
+      Port.open({:spawn_executable, filename}, [
         {:args, args},
         {:line, 1024},
         :use_stdio,
@@ -177,10 +183,6 @@ defmodule Blinkchain.HAL do
 
   defp with_pixel_offset([strip | rest], offset) do
     [{offset, strip} | with_pixel_offset(rest, offset + strip.count)]
-  end
-
-  defp rpi_ws281x_path do
-    Path.join(:code.priv_dir(:blinkchain), "rpi_ws281x")
   end
 
   defp send_to_port(command, port) do
