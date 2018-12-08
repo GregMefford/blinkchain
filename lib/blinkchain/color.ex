@@ -16,7 +16,8 @@ defmodule Blinkchain.Color do
   defstruct r: 0, g: 0, b: 0, w: 0
 
   @doc """
-  Parse a `t:Color.t/0` from an HTML-style hex code, formatted as:
+  Parse a `t:Blinkchain.Color.t/0` struct from an HTML-style hex code,
+  formatted as:
   * `"#RRGGBB"` for RGB, or
   * `"#RRGGBBWW"` for RGBW.
   """

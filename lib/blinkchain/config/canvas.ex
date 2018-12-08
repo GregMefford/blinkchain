@@ -1,6 +1,5 @@
 defmodule Blinkchain.Config.Canvas do
   @moduledoc """
-  # `Blinkchain.Canvas`
   Represents a virtual drawing canvas of size `width` x `height`
   """
 
@@ -17,7 +16,7 @@ defmodule Blinkchain.Config.Canvas do
     :height,
   ]
 
-  @doc "Build a `t:Canvas.t/0` struct with a given `width` and `height`"
+  @doc "Build a `t:Blinkchain.Config.Canvas.t/0` struct with a given `width` and `height`"
   def new(width, height) when is_integer(width) and is_integer(height) do
     %Canvas{width: width, height: height}
   end

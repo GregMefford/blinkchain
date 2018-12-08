@@ -17,6 +17,7 @@ defmodule Blinkchain.HAL do
   }
 
   defmodule State do
+    @moduledoc false
     defstruct [:config, :port, :subscriber]
   end
 

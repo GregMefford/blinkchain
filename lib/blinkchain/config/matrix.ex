@@ -5,12 +5,13 @@ defmodule Blinkchain.Config.Matrix do
 
   * `count`: The number of pixels in each axis, expressed as `{x, y}`.
     (default: `{1, 1}`)
-  * `direction`: The `t:Strip.direction/0` of the wiring connection along each axis,
-    expressed as `{major, minor}`. (default: `{:right, :down}`)
+  * `direction`: The `t:Blinkchain.Config.Strip.direction/0` of the wiring
+    connection along each axis, expressed as `{major, minor}`.
+    (default: `{:right, :down}`)
   * `origin`: The top-left-most location in the matrix, expressed as `{x, y}`.
     (default: `{0, 0}`)
-  * `progressive`: Whether the wiring `t:Strip.direction/0` of each successive
-    strip is reversed on the major axis. (default: `false`)
+  * `progressive`: Whether the wiring `t:Blinkchain.Config.Strip.direction/0`
+    of each successive strip is reversed on the major axis. (default: `false`)
   * `spacing`: How far each row and column are spaced on the virtual canvas,
     expressed as `{x, y}`. (default: `{1, 1}`)
   """

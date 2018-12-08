@@ -8,25 +8,25 @@ defmodule Blinkchain.Config.Channel do
   ]
 
   @moduledoc """
-  # `Blinkchain.Channel`
   Represents a single "chain" of pixels of the same type, connected to the same I/O pin.
 
-  * `arrangement`: The list of `t:Strip.t/0` structs that describe each straight section of pixels.
-  * `brightness`: The scale factor used for all pixels in the channel (0-255, default: 255).
+  * `arrangement`: The list of `t:Blinkchain.Config.Strip.t/0` structs that describe each straight section of pixels.
+  * `brightness`: The scale factor used for all pixels in the channel (`0`-`255`, default: `255`).
   * `gamma`: A custom gamma curve to apply to the color of each pixel (default is linear).
-    Specified as a list of 256 integer values between 0 and 255, which will be indexed to transform each color channel
+    Specified as a list of 256 integer values between `0` and `255`, which will be indexed to transform each color channel
     from the canvas to the hardware pixels.
   * `invert`: Whether to invert the PWM signal sent to the I/O pin (required by some hardware types (default: `false`).
-  * `number`: Which PWM block to use (must be 0 or 1)
-  * `pin`: The I/O pin number to use for this channel (default: 18)
+  * `number`: Which PWM block to use (must be `0` or `1`)
+  * `pin`: The I/O pin number to use for this channel (default: `18`)
     Only certain I/O pins are supported and only one pin from each PWM hardware block can be used simultaneously.
     Reference the `BCM` pin numbers on https://pinout.xyz/ for physical pin locations.
-    * Available pins for PWM block 0: #{inspect @pwm_0_pins}
-    * Available pins for PWM block 1: #{inspect @pwm_1_pins}
-  * `type`: The order of color channels to send to each pixel. (default: :gbr)
+    * Available pins for PWM block 0: `#{inspect @pwm_0_pins}`
+    * Available pins for PWM block 1: `#{inspect @pwm_1_pins}`
+  * `type`: The order of color channels to send to each pixel. (default: `:gbr`)
     You may have to experiment to determine the correct setting for your pixel hardware, for example, by setting a
     pixel to full-intensity for each color channel one-by-one and seeing which color actually lights up.
-    Valid options: #{inspect @valid_types}
+
+    Valid options: `#{inspect @valid_types}`
   """
 
   alias Blinkchain.Config.{
@@ -56,7 +56,7 @@ defmodule Blinkchain.Config.Channel do
     type: :gbr
   ]
 
-  @doc "Build a `t:Channel.t/0` struct from given configuration options"
+  @doc "Build a `t:Blinkchain.Config.Channel.t/0` struct from given configuration options"
   @spec new(Keyword.t(), Blinkchain.channel_number()) :: Channel.t()
   def new(nil, number) when number in [0, 1], do: %Channel{number: number}
   def new(channel_config, number) when number in [0,1] do

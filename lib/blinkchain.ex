@@ -8,8 +8,6 @@ defmodule Blinkchain do
   require Logger
 
   @moduledoc """
-  # `Blinkchian`
-
   This module defines the canvas-based drawing API for controlling one or more
   strips or arrays of NeoPixel-compatible RGB or RGBW LEDs. The virtual drawing
   surface consists of a single rectangular plane where each NeoPixel can be
@@ -42,6 +40,17 @@ defmodule Blinkchain do
 
   @typedoc "which PWM channel to use (0 or 1)"
   @type channel_number :: 0 | 1
+
+  @typedoc "an RGB or RGBW color specification"
+  @type color ::
+    Color.t
+    | {uint8, uint8, uint8}
+    | {uint8, uint8, uint8, uint8}
+
+  @typedoc "an X-Y point specification"
+  @type point ::
+    Point.t
+    | {uint16, uint16}
 
   @typedoc "unsigned 8-bit integer"
   @type uint8 :: 0..255
@@ -84,10 +93,7 @@ defmodule Blinkchain do
   @doc """
   Set the color of the pixel at a given point on the virtual canvas.
   """
-  @spec set_pixel(
-    Point.t() | {uint16(), uint16()},
-    Color.t() | {uint8(), uint8(), uint8()} | {uint8(), uint8(), uint8(), uint8()}
-  ) ::
+  @spec set_pixel(point(), color()) ::
     :ok |
     {:error, :invalid, :point} |
     {:error, :invalid, :color}
@@ -105,12 +111,7 @@ defmodule Blinkchain do
   Fill the region with `color`, starting at `origin` and extending to the right
   by `width` pixels and down by `height` pixels.
   """
-  @spec fill(
-    Point.t() | {uint16(), uint16()},
-    uint16(),
-    uint16(),
-    Color.t() | {uint8(), uint8(), uint8()} | {uint8(), uint8(), uint8(), uint8()}
-  ) ::
+  @spec fill(point(), uint16(), uint16(), color()) ::
     :ok |
     {:error, :invalid, :origin} |
     {:error, :invalid, :width} |
@@ -131,12 +132,7 @@ defmodule Blinkchain do
   @doc """
   Copy the region of size `width` by `height` from `source` to `destination`.
   """
-  @spec copy(
-    Point.t() | {uint16(), uint16()},
-    Point.t() | {uint16(), uint16()},
-    uint16(),
-    uint16()
-  ) ::
+  @spec copy(point(), point(), uint16(), uint16()) ::
     :ok |
     {:error, :invalid, :source} |
     {:error, :invalid, :destination} |
@@ -157,16 +153,11 @@ defmodule Blinkchain do
   Copy the region of size `width` by `height` from `source` to `destination`,
   ignoring pixels whose color components are all zero.
 
-  > Note: This is different than `f:copy/4` because it allows a simple
+  > Note: This is different than `copy/4` because it allows a simple
   > transparency mask to be created by setting all of the color components to
   > zero for the pixels that are intended to be transparent.
   """
-  @spec copy_blit(
-    Point.t() | {uint16(), uint16()},
-    Point.t() | {uint16(), uint16()},
-    uint16(),
-    uint16()
-  ) ::
+  @spec copy_blit(point(), point(), uint16(), uint16()) ::
     :ok |
     {:error, :invalid, :source} |
     {:error, :invalid, :destination} |
@@ -189,20 +180,13 @@ defmodule Blinkchain do
   pixels whose color components are all zero.
 
   `data` must be a list of `width` x `height` elements, where each element is
-  a `t:Color.t/0`
+  a `t:color/0`.
 
-  > Note: Similar to `f:copy_blit/4`, this allows a simple transparency mask to
+  > Note: Similar to `copy_blit/4`, this allows a simple transparency mask to
   > be created by setting all of the color components to zero for the pixels
   > that are intended to be transparent.
   """
-  @spec blit(
-    Point.t() | {uint16(), uint16()},
-    uint16(),
-    uint16(),
-    [
-      Color.t() | {uint8(), uint8(), uint8()} | {uint8(), uint8(), uint8(), uint8()}
-    ]
-  ) ::
+  @spec blit(point(), uint16(), uint16(), [color()]) ::
     :ok |
     {:error, :invalid, :destination} |
     {:error, :invalid, :width} |

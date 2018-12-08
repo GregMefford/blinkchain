@@ -14,7 +14,18 @@ defmodule Blinkchain.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       package: package(),
-      deps: deps()
+      aliases: [
+        docs: ["docs", &copy_images/1],
+      ],
+      deps: deps(),
+      docs: [
+        main: "Blinkchain",
+        extras: [
+          "README.md",
+        ]
+      ],
+      name: "Blinkchain",
+      source_url: "https://github.com/GregMefford/blinkchain"
     ]
   end
 
@@ -27,7 +38,12 @@ defmodule Blinkchain.Mixfile do
     [
       {:elixir_make, "~> 0.4", runtime: false},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
+      {:ex_doc, "~> 0.19", only: [:dev], runtime: false}
     ]
+  end
+
+  defp copy_images(_) do
+    File.cp_r("resources", "doc/resources")
   end
 
   defp package do
