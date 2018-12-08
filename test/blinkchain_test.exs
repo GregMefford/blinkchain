@@ -260,6 +260,20 @@ defmodule Blinkchain.BlinkchainTest do
       assert_receive "DBG:   [1][4]: 0x00ff0000"
     end
 
+    test "works with tuples instead of structs" do
+      data = [
+        {0, 0, 0, 0},
+        {0, 0, 0, 255},
+        {0, 0, 0, 0},
+        {0, 0, 0, 255},
+        {0, 0, 0, 0},
+        {0, 0, 0, 255}
+      ]
+
+      Blinkchain.blit({3, 0}, 3, 2, data)
+      assert_receive "DBG: Called blit(x: 3, y: 0, width: 3, height: 2, data: AAAAAAAAAP8AAAAAAAAA/wAAAAAAAAD/)"
+    end
+
     test "works with binary data" do
       data =
         Enum.join([

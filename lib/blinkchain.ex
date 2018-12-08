@@ -262,6 +262,12 @@ defmodule Blinkchain do
   defp validate_point(%Point{x: x, y: y}, _tag) when x in 0..65535 and y in 0..65535, do: :ok
   defp validate_point(_point, tag), do: {:error, :invalid, tag}
 
+  defp validate_color({r, g, b}) when r in 0..255 and g in 0..255 and b in 0..255,
+    do: :ok
+
+  defp validate_color({r, g, b, w}) when r in 0..255 and g in 0..255 and b in 0..255 and w in 0..255,
+    do: :ok
+
   defp validate_color(%Color{r: r, g: g, b: b, w: w}) when r in 0..255 and g in 0..255 and b in 0..255 and w in 0..255,
     do: :ok
 
