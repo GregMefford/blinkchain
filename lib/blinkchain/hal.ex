@@ -8,8 +8,9 @@ defmodule Blinkchain.HAL do
   alias Blinkchain.{
     Color,
     Config,
-    Point,
+    Point
   }
+
   alias Blinkchain.Config.{
     Canvas,
     Channel,
@@ -26,6 +27,7 @@ defmodule Blinkchain.HAL do
       opts
       |> Keyword.get(:config)
       |> Config.load()
+
     subscriber = Keyword.get(opts, :subscriber)
     GenServer.start_link(__MODULE__, %{config: config, subscriber: subscriber}, name: __MODULE__)
   end
@@ -35,14 +37,17 @@ defmodule Blinkchain.HAL do
       [config.channel0, config.channel1]
       |> Enum.flat_map(fn ch -> ["#{ch.pin}", "#{Channel.total_count(ch)}", "#{ch.type}"] end)
 
-    Logger.debug("Opening rpi_ws281x Port (args: #{inspect args})")
-    port = Port.open({:spawn_executable, rpi_ws281x_path()}, [
-      {:args, args},
-      {:line, 1024},
-      :use_stdio,
-      :stderr_to_stdout,
-      :exit_status
-    ])
+    Logger.debug("Opening rpi_ws281x Port (args: #{inspect(args)})")
+
+    port =
+      Port.open({:spawn_executable, rpi_ws281x_path()}, [
+        {:args, args},
+        {:line, 1024},
+        :use_stdio,
+        :stderr_to_stdout,
+        :exit_status
+      ])
+
     send(self(), :init_canvas)
     {:ok, %State{config: config, port: port, subscriber: subscriber}}
   end
@@ -106,18 +111,18 @@ defmodule Blinkchain.HAL do
   end
 
   def handle_info({_port, {:data, {_, message}}}, state) do
-    Logger.debug(fn -> "Message from rpi_ws281x: <- #{inspect to_string(message)}" end)
+    Logger.debug(fn -> "Message from rpi_ws281x: <- #{inspect(to_string(message))}" end)
     notify(state.subscriber, to_string(message))
     {:noreply, state}
   end
 
   def handle_info({_port, {:exit_status, exit_status}}, state) do
-    {:stop, "rpi_ws281x OS process died with status: #{inspect exit_status}", state}
+    {:stop, "rpi_ws281x OS process died with status: #{inspect(exit_status)}", state}
   end
 
   # TODO: This shoud be removed once the API is all figured out.
   def handle_info(message, state) do
-    Logger.error("Unhandled message: #{inspect message}")
+    Logger.error("Unhandled message: #{inspect(message)}")
     {:noreply, state}
   end
 
@@ -129,8 +134,10 @@ defmodule Blinkchain.HAL do
   end
 
   defp init_channel(_, nil, _port), do: nil
+
   defp init_channel(channel_num, %Channel{} = channel, port) do
     invert = if channel.invert, do: 1, else: 0
+
     "set_invert #{channel_num} #{invert}\n"
     |> send_to_port(port)
 
@@ -153,19 +160,21 @@ defmodule Blinkchain.HAL do
   end
 
   defp init_pixels(channel_num, offset, %Strip{origin: {x, y}, count: count, direction: direction}, port) do
-    {dx, dy} = case direction do
-      :right -> {1, 0}
-      :left -> {-1, 0}
-      :down -> {0, 1}
-      :up -> {0, -1}
-    end
+    {dx, dy} =
+      case direction do
+        :right -> {1, 0}
+        :left -> {-1, 0}
+        :down -> {0, 1}
+        :up -> {0, -1}
+      end
 
     "init_pixels #{channel_num} #{offset} #{x} #{y} #{count} #{dx} #{dy}\n"
     |> send_to_port(port)
   end
 
-  defp with_pixel_offset(arrangement, offset \\0)
+  defp with_pixel_offset(arrangement, offset \\ 0)
   defp with_pixel_offset([], _offset), do: []
+
   defp with_pixel_offset([strip | rest], offset) do
     [{offset, strip} | with_pixel_offset(rest, offset + strip.count)]
   end
@@ -175,7 +184,7 @@ defmodule Blinkchain.HAL do
   end
 
   defp send_to_port(command, port) do
-    Logger.debug(fn -> "Sending to rpi_ws281x: -> #{inspect command}" end)
+    Logger.debug(fn -> "Sending to rpi_ws281x: -> #{inspect(command)}" end)
     Port.command(port, command)
     receive_from_port(port)
   end
@@ -185,8 +194,9 @@ defmodule Blinkchain.HAL do
       {^port, {:data, {_, 'OK: ' ++ response}}} -> {:ok, to_string(response)}
       {^port, {:data, {_, 'OK'}}} -> :ok
       {^port, {:data, {_, 'ERR: ' ++ response}}} -> {:error, to_string(response)}
-      {^port, {:exit_status, exit_status}} -> raise "rpi_ws281x OS process died with status: #{inspect exit_status}"
-    after 500 -> raise "timeout waiting for rpi_ws281x OS process to reply"
+      {^port, {:exit_status, exit_status}} -> raise "rpi_ws281x OS process died with status: #{inspect(exit_status)}"
+    after
+      500 -> raise "timeout waiting for rpi_ws281x OS process to reply"
     end
   end
 

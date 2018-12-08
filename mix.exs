@@ -16,12 +16,13 @@ defmodule Blinkchain.Mixfile do
       package: package(),
       aliases: [
         docs: ["docs", &copy_images/1],
+        format: ["format", "cmd astyle -n -q -s2 src/*.h src/*.c"]
       ],
       deps: deps(),
       docs: [
-        main: "Blinkchain",
+        main: "README",
         extras: [
-          "README.md",
+          "README.md"
         ]
       ],
       name: "Blinkchain",
@@ -30,14 +31,13 @@ defmodule Blinkchain.Mixfile do
   end
 
   def application() do
-    [mod: {Blinkchain.Application, []},
-     extra_applications: [:logger]]
+    [mod: {Blinkchain.Application, []}, extra_applications: [:logger]]
   end
 
   defp deps do
     [
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:elixir_make, "~> 0.4", runtime: false},
-      {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
       {:ex_doc, "~> 0.19", only: [:dev], runtime: false}
     ]
   end

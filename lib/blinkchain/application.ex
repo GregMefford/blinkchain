@@ -7,6 +7,7 @@ defmodule Blinkchain.Application do
     children = [
       Blinkchain.HAL
     ]
+
     opts = [strategy: :one_for_one, name: Blinkchain.Supervisor]
     Supervisor.start_link(children, opts)
   end

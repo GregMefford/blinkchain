@@ -2,6 +2,7 @@ defmodule Blinkchain.ConfigTest do
   use ExUnit.Case
 
   alias Blinkchain.Config
+
   alias Blinkchain.Config.{
     Canvas,
     Channel,
@@ -45,16 +46,16 @@ defmodule Blinkchain.ConfigTest do
       assert canvas == %Canvas{width: 10, height: 2}
 
       assert ch0 == %Channel{
-        arrangement: [%Strip{origin: {0, 0}, count: 10, direction: :right}],
-        number: 0,
-        pin: 18
-      }
+               arrangement: [%Strip{origin: {0, 0}, count: 10, direction: :right}],
+               number: 0,
+               pin: 18
+             }
 
       assert ch1 == %Channel{
-        arrangement: [%Strip{origin: {0, 1}, count: 5, direction: :right}],
-        number: 1,
-        pin: 19
-      }
+               arrangement: [%Strip{origin: {0, 1}, count: 5, direction: :right}],
+               number: 1,
+               pin: 19
+             }
     end
 
     test "with one channel that has a zig-zag Matrix" do
@@ -82,15 +83,15 @@ defmodule Blinkchain.ConfigTest do
       assert canvas == %Canvas{width: 8, height: 4}
 
       assert ch0 == %Channel{
-        arrangement: [
-          %Strip{origin: {0, 0}, count: 8, direction: :right},
-          %Strip{origin: {7, 1}, count: 8, direction: :left},
-          %Strip{origin: {0, 2}, count: 8, direction: :right},
-          %Strip{origin: {7, 3}, count: 8, direction: :left}
-        ],
-        number: 0,
-        pin: 18
-      }
+               arrangement: [
+                 %Strip{origin: {0, 0}, count: 8, direction: :right},
+                 %Strip{origin: {7, 1}, count: 8, direction: :left},
+                 %Strip{origin: {0, 2}, count: 8, direction: :right},
+                 %Strip{origin: {7, 3}, count: 8, direction: :left}
+               ],
+               number: 0,
+               pin: 18
+             }
     end
 
     test "with one channel that has a rotated zig-zag Matrix" do
@@ -118,15 +119,15 @@ defmodule Blinkchain.ConfigTest do
       assert canvas == %Canvas{width: 4, height: 8}
 
       assert ch0 == %Channel{
-        arrangement: [
-          %Strip{origin: {3, 0}, count: 8, direction: :down},
-          %Strip{origin: {2, 7}, count: 8, direction: :up},
-          %Strip{origin: {1, 0}, count: 8, direction: :down},
-          %Strip{origin: {0, 7}, count: 8, direction: :up}
-        ],
-        number: 0,
-        pin: 18
-      }
+               arrangement: [
+                 %Strip{origin: {3, 0}, count: 8, direction: :down},
+                 %Strip{origin: {2, 7}, count: 8, direction: :up},
+                 %Strip{origin: {1, 0}, count: 8, direction: :down},
+                 %Strip{origin: {0, 7}, count: 8, direction: :up}
+               ],
+               number: 0,
+               pin: 18
+             }
     end
 
     test "with one channel that has a mixture of Strips and Matrices" do
@@ -167,25 +168,24 @@ defmodule Blinkchain.ConfigTest do
       assert canvas == %Canvas{width: 9, height: 8}
 
       assert ch0 == %Channel{
-        arrangement: [
-          %Strip{origin: {0, 0}, count: 8, direction: :down},
-          %Strip{origin: {1, 0}, count: 8, direction: :down},
-          %Strip{origin: {2, 0}, count: 8, direction: :down},
-          %Strip{origin: {3, 0}, count: 8, direction: :down},
-          %Strip{origin: {4, 7}, count: 8, direction: :up},
-          %Strip{origin: {5, 0}, count: 4, direction: :right},
-          %Strip{origin: {8, 1}, count: 4, direction: :left},
-          %Strip{origin: {5, 2}, count: 4, direction: :right},
-          %Strip{origin: {8, 3}, count: 4, direction: :left},
-          %Strip{origin: {5, 4}, count: 4, direction: :right},
-          %Strip{origin: {8, 5}, count: 4, direction: :left},
-          %Strip{origin: {5, 6}, count: 4, direction: :right},
-          %Strip{origin: {8, 7}, count: 4, direction: :left}
-        ],
-        number: 0,
-        pin: 18
-      }
+               arrangement: [
+                 %Strip{origin: {0, 0}, count: 8, direction: :down},
+                 %Strip{origin: {1, 0}, count: 8, direction: :down},
+                 %Strip{origin: {2, 0}, count: 8, direction: :down},
+                 %Strip{origin: {3, 0}, count: 8, direction: :down},
+                 %Strip{origin: {4, 7}, count: 8, direction: :up},
+                 %Strip{origin: {5, 0}, count: 4, direction: :right},
+                 %Strip{origin: {8, 1}, count: 4, direction: :left},
+                 %Strip{origin: {5, 2}, count: 4, direction: :right},
+                 %Strip{origin: {8, 3}, count: 4, direction: :left},
+                 %Strip{origin: {5, 4}, count: 4, direction: :right},
+                 %Strip{origin: {8, 5}, count: 4, direction: :left},
+                 %Strip{origin: {5, 6}, count: 4, direction: :right},
+                 %Strip{origin: {8, 7}, count: 4, direction: :left}
+               ],
+               number: 0,
+               pin: 18
+             }
     end
-  end # describe configuration
-
+  end
 end

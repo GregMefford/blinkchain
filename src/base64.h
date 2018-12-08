@@ -37,7 +37,7 @@ YWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVz
 const static char* b64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/" ;
 
 // maps A=>0,B=>1..
-const static unsigned char unb64[]={
+const static unsigned char unb64[]= {
   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //10
   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //20
   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //30

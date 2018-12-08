@@ -4,6 +4,7 @@ defmodule Blinkchain.Config do
   """
 
   alias Blinkchain.Config
+
   alias Blinkchain.Config.{
     Canvas,
     Channel
@@ -11,10 +12,10 @@ defmodule Blinkchain.Config do
 
   @typedoc @moduledoc
   @type t :: %__MODULE__{
-    canvas: Canvas.t(),
-    channel0: Channel.t(),
-    channel1: Channel.t()
-  }
+          canvas: Canvas.t(),
+          channel0: Channel.t(),
+          channel1: Channel.t()
+        }
 
   defstruct [
     :canvas,
@@ -31,6 +32,7 @@ defmodule Blinkchain.Config do
     |> Application.get_all_env()
     |> load()
   end
+
   def load(config) when is_list(config) do
     canvas =
       config
@@ -57,6 +59,5 @@ defmodule Blinkchain.Config do
   # Private Helpers
 
   defp load_canvas_config({width, height}), do: Canvas.new(width, height)
-  defp load_canvas_config(_), do: raise ":blinkchain :canvas dimensions must be configured as {width, height}"
-
+  defp load_canvas_config(_), do: raise(":blinkchain :canvas dimensions must be configured as {width, height}")
 end

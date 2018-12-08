@@ -43,14 +43,14 @@ defmodule Blinkchain do
 
   @typedoc "an RGB or RGBW color specification"
   @type color ::
-    Color.t
-    | {uint8, uint8, uint8}
-    | {uint8, uint8, uint8, uint8}
+          Color.t()
+          | {uint8, uint8, uint8}
+          | {uint8, uint8, uint8, uint8}
 
   @typedoc "an X-Y point specification"
   @type point ::
-    Point.t
-    | {uint16, uint16}
+          Point.t()
+          | {uint16, uint16}
 
   @typedoc "unsigned 8-bit integer"
   @type uint8 :: 0..255
@@ -63,14 +63,13 @@ defmodule Blinkchain do
   `brightness/255`.
   """
   @spec set_brightness(channel_number(), uint8()) ::
-    :ok |
-    {:error, :invalid, :channel} |
-    {:error, :invalid, :brightness}
+          :ok
+          | {:error, :invalid, :channel}
+          | {:error, :invalid, :brightness}
   def set_brightness(channel, brightness) do
-    with \
-      :ok <- validate_channel_number(channel),
-      :ok <- validate_uint8(brightness, :brightness),
-    do: GenServer.call(HAL, {:set_brightness, channel, brightness})
+    with :ok <- validate_channel_number(channel),
+         :ok <- validate_uint8(brightness, :brightness),
+         do: GenServer.call(HAL, {:set_brightness, channel, brightness})
   end
 
   @doc """
@@ -80,29 +79,28 @@ defmodule Blinkchain do
   look-up table to transform the value of each color component for each pixel.
   """
   @spec set_gamma(channel_number(), [uint8()]) ::
-    :ok |
-    {:error, :invalid, :channel} |
-    {:error, :invalid, :gamma}
+          :ok
+          | {:error, :invalid, :channel}
+          | {:error, :invalid, :gamma}
   def set_gamma(channel, gamma) do
-    with \
-      :ok <- validate_channel_number(channel),
-      :ok <- validate_gamma(gamma),
-    do: GenServer.call(HAL, {:set_gamma, channel, gamma})
+    with :ok <- validate_channel_number(channel),
+         :ok <- validate_gamma(gamma),
+         do: GenServer.call(HAL, {:set_gamma, channel, gamma})
   end
 
   @doc """
   Set the color of the pixel at a given point on the virtual canvas.
   """
   @spec set_pixel(point(), color()) ::
-    :ok |
-    {:error, :invalid, :point} |
-    {:error, :invalid, :color}
+          :ok
+          | {:error, :invalid, :point}
+          | {:error, :invalid, :color}
   def set_pixel(%Point{} = point, %Color{} = color) do
-    with \
-      :ok <- validate_point(point),
-      :ok <- validate_color(color),
-    do: GenServer.call(HAL, {:set_pixel, point, color})
+    with :ok <- validate_point(point),
+         :ok <- validate_color(color),
+         do: GenServer.call(HAL, {:set_pixel, point, color})
   end
+
   def set_pixel({x, y}, color), do: set_pixel(%Point{x: x, y: y}, color)
   def set_pixel(point, {r, g, b}), do: set_pixel(point, %Color{r: r, g: g, b: b})
   def set_pixel(point, {r, g, b, w}), do: set_pixel(point, %Color{r: r, g: g, b: b, w: w})
@@ -112,19 +110,19 @@ defmodule Blinkchain do
   by `width` pixels and down by `height` pixels.
   """
   @spec fill(point(), uint16(), uint16(), color()) ::
-    :ok |
-    {:error, :invalid, :origin} |
-    {:error, :invalid, :width} |
-    {:error, :invalid, :height} |
-    {:error, :invalid, :color}
+          :ok
+          | {:error, :invalid, :origin}
+          | {:error, :invalid, :width}
+          | {:error, :invalid, :height}
+          | {:error, :invalid, :color}
   def fill(%Point{} = origin, width, height, %Color{} = color) do
-    with \
-      :ok <- validate_point(origin, :origin),
-      :ok <- validate_uint16(width, :width),
-      :ok <- validate_uint16(height, :height),
-      :ok <- validate_color(color),
-    do: GenServer.call(HAL, {:fill, origin, width, height, color})
+    with :ok <- validate_point(origin, :origin),
+         :ok <- validate_uint16(width, :width),
+         :ok <- validate_uint16(height, :height),
+         :ok <- validate_color(color),
+         do: GenServer.call(HAL, {:fill, origin, width, height, color})
   end
+
   def fill({x, y}, width, height, color), do: fill(%Point{x: x, y: y}, width, height, color)
   def fill(origin, width, height, {r, g, b}), do: fill(origin, width, height, %Color{r: r, g: g, b: b})
   def fill(origin, width, height, {r, g, b, w}), do: fill(origin, width, height, %Color{r: r, g: g, b: b, w: w})
@@ -133,19 +131,19 @@ defmodule Blinkchain do
   Copy the region of size `width` by `height` from `source` to `destination`.
   """
   @spec copy(point(), point(), uint16(), uint16()) ::
-    :ok |
-    {:error, :invalid, :source} |
-    {:error, :invalid, :destination} |
-    {:error, :invalid, :width} |
-    {:error, :invalid, :height}
+          :ok
+          | {:error, :invalid, :source}
+          | {:error, :invalid, :destination}
+          | {:error, :invalid, :width}
+          | {:error, :invalid, :height}
   def copy(%Point{} = source, %Point{} = destination, width, height) do
-    with \
-      :ok <- validate_point(source, :source),
-      :ok <- validate_point(destination, :destination),
-      :ok <- validate_uint16(width, :width),
-      :ok <- validate_uint16(height, :height),
-    do: GenServer.call(HAL, {:copy, source, destination, width, height})
+    with :ok <- validate_point(source, :source),
+         :ok <- validate_point(destination, :destination),
+         :ok <- validate_uint16(width, :width),
+         :ok <- validate_uint16(height, :height),
+         do: GenServer.call(HAL, {:copy, source, destination, width, height})
   end
+
   def copy({x, y}, destination, width, height), do: copy(%Point{x: x, y: y}, destination, width, height)
   def copy(source, {x, y}, width, height), do: copy(source, %Point{x: x, y: y}, width, height)
 
@@ -158,19 +156,19 @@ defmodule Blinkchain do
   > zero for the pixels that are intended to be transparent.
   """
   @spec copy_blit(point(), point(), uint16(), uint16()) ::
-    :ok |
-    {:error, :invalid, :source} |
-    {:error, :invalid, :destination} |
-    {:error, :invalid, :width} |
-    {:error, :invalid, :height}
+          :ok
+          | {:error, :invalid, :source}
+          | {:error, :invalid, :destination}
+          | {:error, :invalid, :width}
+          | {:error, :invalid, :height}
   def copy_blit(%Point{} = source, %Point{} = destination, width, height) do
-    with \
-      :ok <- validate_point(source, :source),
-      :ok <- validate_point(destination, :destination),
-      :ok <- validate_uint16(width, :width),
-      :ok <- validate_uint16(height, :height),
-    do: GenServer.call(HAL, {:copy_blit, source, destination, width, height})
+    with :ok <- validate_point(source, :source),
+         :ok <- validate_point(destination, :destination),
+         :ok <- validate_uint16(width, :width),
+         :ok <- validate_uint16(height, :height),
+         do: GenServer.call(HAL, {:copy_blit, source, destination, width, height})
   end
+
   def copy_blit({x, y}, destination, width, height), do: copy_blit(%Point{x: x, y: y}, destination, width, height)
   def copy_blit(source, {x, y}, width, height), do: copy_blit(source, %Point{x: x, y: y}, width, height)
 
@@ -187,19 +185,19 @@ defmodule Blinkchain do
   > that are intended to be transparent.
   """
   @spec blit(point(), uint16(), uint16(), [color()]) ::
-    :ok |
-    {:error, :invalid, :destination} |
-    {:error, :invalid, :width} |
-    {:error, :invalid, :height} |
-    {:error, :invalid, :data}
+          :ok
+          | {:error, :invalid, :destination}
+          | {:error, :invalid, :width}
+          | {:error, :invalid, :height}
+          | {:error, :invalid, :data}
   def blit(%Point{} = destination, width, height, data) do
-    with \
-      :ok <- validate_point(destination, :destination),
-      :ok <- validate_uint16(width, :width),
-      :ok <- validate_uint16(height, :height),
-      :ok <- validate_data(data, width * height),
-    do: GenServer.call(HAL, {:blit, destination, width, height, normalize_data(data)})
+    with :ok <- validate_point(destination, :destination),
+         :ok <- validate_uint16(width, :width),
+         :ok <- validate_uint16(height, :height),
+         :ok <- validate_data(data, width * height),
+         do: GenServer.call(HAL, {:blit, destination, width, height, normalize_data(data)})
   end
+
   def blit({x, y}, width, height, data), do: blit(%Point{x: x, y: y}, width, height, data)
 
   @doc """
@@ -212,6 +210,7 @@ defmodule Blinkchain do
   # Helpers
 
   defp normalize_data(data) when is_binary(data), do: data
+
   defp normalize_data(colors) when is_list(colors) do
     colors
     |> Enum.reduce(<<>>, fn color, acc -> acc <> normalize_color(color) end)
@@ -250,30 +249,33 @@ defmodule Blinkchain do
 
   defp validate_gamma(gamma) when is_list(gamma) and length(gamma) == 256 do
     gamma
-    |> Enum.all?(& validate_uint8(&1) == :ok)
+    |> Enum.all?(&(validate_uint8(&1) == :ok))
     |> case do
       true -> :ok
       false -> {:error, :invalid, :gamma}
     end
   end
+
   defp validate_gamma(_), do: {:error, :invalid, :gamma}
 
   defp validate_point(point, tag \\ :point)
   defp validate_point(%Point{x: x, y: y}, _tag) when x in 0..65535 and y in 0..65535, do: :ok
   defp validate_point(_point, tag), do: {:error, :invalid, tag}
 
-  defp validate_color(%Color{r: r, g: g, b: b, w: w}) when r in 0..255 and g in 0..255 and b in 0..255 and w in 0..255, do: :ok
+  defp validate_color(%Color{r: r, g: g, b: b, w: w}) when r in 0..255 and g in 0..255 and b in 0..255 and w in 0..255,
+    do: :ok
+
   defp validate_color(_), do: {:error, :invalid, :color}
 
   defp validate_data(data, expected_length) when is_list(data) and length(data) == expected_length do
     data
-    |> Enum.all?(& validate_color(&1) == :ok)
+    |> Enum.all?(&(validate_color(&1) == :ok))
     |> case do
       true -> :ok
       false -> {:error, :invalid, :data}
     end
   end
+
   defp validate_data(data, expected_length) when is_binary(data) and byte_size(data) == expected_length * 4, do: :ok
   defp validate_data(_, _), do: {:error, :invalid, :data}
-
 end

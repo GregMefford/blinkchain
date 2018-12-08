@@ -15,25 +15,23 @@ defmodule Blinkchain.Config.Strip do
 
   @typedoc @moduledoc
   @type t :: %__MODULE__{
-    count: Blinkchain.uint16(),
-    direction: direction(),
-    origin: {Blinkchain.uint16(), Blinkchain.uint16()},
-    spacing: Blinkchain.uint16()
-  }
+          count: Blinkchain.uint16(),
+          direction: direction(),
+          origin: {Blinkchain.uint16(), Blinkchain.uint16()},
+          spacing: Blinkchain.uint16()
+        }
 
-  defstruct [
-    count: 1,
-    direction: :right,
-    origin: {0, 0},
-    spacing: 1
-  ]
+  defstruct count: 1,
+            direction: :right,
+            origin: {0, 0},
+            spacing: 1
 
   @type direction :: :left | :right | :up | :down
 
   def new(%{type: :strip} = config) do
     sanitized_config = Map.take(config, [:origin, :count, :spacing, :direction])
+
     %Strip{}
     |> Map.merge(sanitized_config)
   end
-
 end
