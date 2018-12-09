@@ -48,7 +48,7 @@ defmodule Rainbow.MixProject do
 
   defp deps(target) do
     [
-      {:blinkchain, path: "~/projects/gregmefford/blinkchain"},
+      {:blinkchain, "~> 1.0.0-rc0"},
       {:nerves_runtime, "~> 0.6"},
       {:nerves_init_gadget, "~> 0.4"}
     ] ++ system(target)

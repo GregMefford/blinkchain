@@ -1,7 +1,7 @@
 defmodule Blinkchain.Mixfile do
   use Mix.Project
 
-  @version "1.0.0-dev"
+  @version "1.0.0-rc0"
 
   def project do
     [
@@ -22,7 +22,7 @@ defmodule Blinkchain.Mixfile do
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test, "coveralls.circle": :test],
       docs: [
-        main: "README",
+        main: "readme",
         extras: [
           "README.md"
         ]
