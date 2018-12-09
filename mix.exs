@@ -36,6 +36,7 @@ defmodule Blinkchain.Mixfile do
 
   defp deps do
     [
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:elixir_make, "~> 0.4", runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev], runtime: false}

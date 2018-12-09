@@ -303,6 +303,7 @@ defmodule Blinkchain.BlinkchainTest do
   defp flush(:inspect, opts) do
     receive do
       msg ->
+        # credo:disable-for-next-line
         IO.inspect(msg, opts)
         flush(:inspect, opts)
     after
