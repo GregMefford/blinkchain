@@ -11,7 +11,12 @@ defmodule Blinkchain.Application do
       Blinkchain.HAL
     ]
 
-    opts = [strategy: :one_for_one, name: Blinkchain.Supervisor]
+    opts = [
+      name: Blinkchain.Supervisor,
+      strategy: :one_for_one,
+      max_restarts: 5,
+      max_seconds: 1
+    ]
     Supervisor.start_link(children, opts)
   end
 
