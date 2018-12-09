@@ -3,8 +3,6 @@ defmodule Blinkchain.HAL do
 
   use GenServer
 
-  require Logger
-
   alias Blinkchain.{
     Color,
     Config,
@@ -108,7 +106,6 @@ defmodule Blinkchain.HAL do
   end
 
   def handle_info(:init_canvas, %{config: config, port: port} = state) do
-    Logger.debug("Initializing canvas")
     init_canvas(config.canvas, port)
     init_channel(0, config.channel0, port)
     init_channel(1, config.channel1, port)
@@ -117,19 +114,12 @@ defmodule Blinkchain.HAL do
   end
 
   def handle_info({_port, {:data, {_, message}}}, state) do
-    Logger.debug(fn -> "Message from rpi_ws281x: <- #{inspect(to_string(message))}" end)
     notify(state.subscriber, to_string(message))
     {:noreply, state}
   end
 
   def handle_info({_port, {:exit_status, exit_status}}, state) do
     {:stop, "rpi_ws281x OS process died with status: #{inspect(exit_status)}", state}
-  end
-
-  # TODO: This shoud be removed once the API is all figured out.
-  def handle_info(message, state) do
-    Logger.error("Unhandled message: #{inspect(message)}")
-    {:noreply, state}
   end
 
   # Private Helpers
@@ -186,7 +176,6 @@ defmodule Blinkchain.HAL do
   end
 
   defp send_to_port(command, port) do
-    Logger.debug(fn -> "Sending to rpi_ws281x: -> #{inspect(command)}" end)
     Port.command(port, command)
     receive_from_port(port)
   end

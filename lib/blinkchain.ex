@@ -5,8 +5,6 @@ defmodule Blinkchain do
     Point
   }
 
-  require Logger
-
   @moduledoc """
   This module defines the canvas-based drawing API for controlling one or more
   strips or arrays of NeoPixel-compatible RGB or RGBW LEDs. The virtual drawing
