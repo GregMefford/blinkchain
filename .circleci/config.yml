@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/elixir:1.7
+    environment:
+      MIX_ENV: test
+    steps:
+      - checkout
+      - run: git submodule init && git submodule update
+      - run: mix local.hex --force && mix local.rebar --force
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix credo --strict
+      - run: mix compile --warnings-as-errors
+      - run: mix coveralls.circle

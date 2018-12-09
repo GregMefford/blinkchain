@@ -9,14 +9,12 @@ LDFLAGS +=
 
 CFLAGS += -std=gnu99
 
-CC ?= $(CROSSCOMPILER)gcc
-
-ifeq ($(NERVES_TOOLCHAIN),)
+ifeq ($(CROSSCOMPILE),)
 # Host testing build
 CFLAGS += -DDEBUG
 SRC = src/rpi_ws281x.c src/fake_ws2811.c
 endif
-ifneq ($(NERVES_TOOLCHAIN),)
+ifneq ($(CROSSCOMPILE),)
 # Normal build
 SRC = src/rpi_ws281x.c src/rpi_ws281x/dma.c src/rpi_ws281x/mailbox.c \
 	src/rpi_ws281x/mailbox.c src/rpi_ws281x/pwm.c src/rpi_ws281x/rpihw.c \

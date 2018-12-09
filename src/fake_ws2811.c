@@ -2,6 +2,7 @@
 // to make it easier to test on non-Raspberry Pi hardware
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 

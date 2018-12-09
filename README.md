@@ -1,5 +1,7 @@
 # Blinkchain
 
+[![Coverage Status](https://coveralls.io/repos/github/GregMefford/blinkchain/badge.svg?branch=master)](https://coveralls.io/github/GregMefford/blinkchain?branch=master)
+
 Drive WS2812B "NeoPixel" RGB LED strips from a Raspberry Pi using Elixir!
 
 ![Rainbow Demo](resources/blinkchain_rainbow.gif)
