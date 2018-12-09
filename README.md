@@ -13,6 +13,9 @@ Makefile, if you so desire.
 > new name and major version bump is that I wanted to overhaul the API and
 > also make it less-specific to Nerves and NeoPixels. For example, it could be
 > used in the future to control DotStar LED chains from Raspbian Linux.
+>
+> If you're looking for the source for the last version of `nerves_neopixel`,
+> you can find it [here](https://github.com/GregMefford/blinkchain/tree/v0.4.0).
 
 ## Installation
 
