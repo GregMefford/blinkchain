@@ -15,8 +15,8 @@ defmodule Blinkchain.Mixfile do
       start_permanent: Mix.env() == :prod,
       package: package(),
       aliases: [
-        docs: ["docs", &copy_images/1],
-        format: ["format", "cmd astyle -n -q -s2 src/*.h src/*.c"]
+        docs: [&copy_images/1, "docs"],
+        format: &format/1
       ],
       deps: deps(),
       docs: [
@@ -44,6 +44,18 @@ defmodule Blinkchain.Mixfile do
 
   defp copy_images(_) do
     File.cp_r("resources", "doc/resources")
+  end
+
+  # Calling `mix format` wiithout any arguments, so also format the C code
+  defp format([]) do
+    Mix.Tasks.Format.run([])
+    System.cmd("astyle", ~w{-n -q -s2 src/*.h src/*.c})
+  end
+
+  # If arguments are passed to `mix format` (e.g. `--check-formatted`),
+  # assume they don't apply to astylei, so don't run it.
+  defp format(args) do
+    Mix.Tasks.Format.run(args)
   end
 
   defp package do

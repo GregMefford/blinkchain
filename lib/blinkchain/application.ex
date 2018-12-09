@@ -7,6 +7,7 @@ defmodule Blinkchain.Application do
 
   def start(_type, _args) do
     Logger.debug("Blinkchain Application starting")
+
     children = [
       Blinkchain.HAL
     ]
@@ -17,6 +18,7 @@ defmodule Blinkchain.Application do
       max_restarts: 5,
       max_seconds: 1
     ]
+
     Supervisor.start_link(children, opts)
   end
 
