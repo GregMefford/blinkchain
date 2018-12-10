@@ -1,10 +1,11 @@
 /_build
 /cover
 /deps
+/doc
 erl_crash.dump
 *.ez
 _images
 /priv
-rel/nerves_system_libs
-rel/nerves_io_neopixel
 *.o
+.DS_Store
+.tool-versions

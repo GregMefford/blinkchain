@@ -1,0 +1,17 @@
+init_canvas 3 3
+print_topology
+init_pixels 1 0 1 1 2 -1 0
+print_topology
+init_pixels 0 0 0 0 2 1 0
+print_topology
+fill 1 0 1 2 255 0 255 0
+render
+set_pixel 1 1 0 10 255 127
+render
+blit 0 1 2 2 24 /wAAAAD/AAAAAP8AAAAA/w==
+render
+copy_blit 0 0 1 1 2 2
+render
+copy 0 0 1 1 2 2
+render
+
