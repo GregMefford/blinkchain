@@ -135,4 +135,4 @@ Blinkchain.render()
 ```
 
 To see more about how this code works or try it out for yourself, check out
-[the included `rainbow` example](https://github.com/GregMefford/blinkchain/examples/rainbow).
+[the included `rainbow` example](https://github.com/GregMefford/blinkchain/tree/master/examples/rainbow).
