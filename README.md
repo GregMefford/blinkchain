@@ -116,7 +116,7 @@ calling `Blinkchain.render/0` to present the virtual canvas onto the physical
 NeoPixel LEDs. For example, to generate a scrolling rainbow pattern, assuming
 that `c1` through `c5` are updated for each frame, you can do:
 
-[Blinkchain API]: https://hexdocs.pm/packages/blinkchain
+[Blinkchain API]: https://hexdocs.pm/blinkchain
 
 ```elixir
 # lib/rainbow/worker.ex
