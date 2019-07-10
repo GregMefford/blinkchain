@@ -10,8 +10,6 @@
 #include "base64.h"
 #include "port_interface.h"
 
-#define DMA_CHANNEL 10
-
 typedef struct {
   uint16_t width;
   uint16_t height;
@@ -336,20 +334,21 @@ void blit(ws2811_channel_t *channels, const canvas_t *canvas) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 7 && argc != 4)
-    errx(EXIT_FAILURE, "Usage: %s <Channel 1 Pin> <Channel 1 Count> <Channel 1 Type> [<Channel 2 Pin> <Channel 2 Count> <Channel 2 Type>]", argv[0]);
+  if (argc != 8 && argc != 5)
+    errx(EXIT_FAILURE, "Usage: %s <DMA Channel> <Channel 1 Pin> <Channel 1 Count> <Channel 1 Type> [<Channel 2 Pin> <Channel 2 Count> <Channel 2 Type>]", argv[0]);
 
-  uint8_t gpio_pin1 = atoi(argv[1]);
-  uint32_t led_count1 = strtol(argv[2], NULL, 10);
-  int strip_type1 = parse_strip_type(argv[3]);
+  uint8_t dma_channel = atoi(argv[1]);
+  uint8_t gpio_pin1 = atoi(argv[2]);
+  uint32_t led_count1 = strtol(argv[3], NULL, 10);
+  int strip_type1 = parse_strip_type(argv[4]);
 
   uint8_t gpio_pin2 = 0;
   uint32_t led_count2 = 0;
   int strip_type2 = WS2811_STRIP_GBR;
-  if (argc == 7) {
-    gpio_pin2 = atoi(argv[4]);
-    led_count2 = strtol(argv[5], NULL, 10);
-    strip_type2 = parse_strip_type(argv[6]);
+  if (argc == 8) {
+    gpio_pin2 = atoi(argv[5]);
+    led_count2 = strtol(argv[6], NULL, 10);
+    strip_type2 = parse_strip_type(argv[7]);
   }
 
   /*
@@ -357,7 +356,7 @@ int main(int argc, char *argv[]) {
   */
   ws2811_t ledstring = {
     .freq = WS2811_TARGET_FREQ,
-    .dmanum = DMA_CHANNEL,
+    .dmanum = dma_channel,
     .channel = {
       [0] = {
         .gpionum = gpio_pin1,
