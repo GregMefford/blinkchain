@@ -6,18 +6,28 @@
 # Usage:
 #   upload.sh [destination IP] [Path to .fw file]
 #
-# If unspecifed, the destination is nerves.local and the .fw file
-# is naively guessed
+# If unspecifed, the destination is nerves.local and the .fw file is naively
+# guessed
 #
-# You may want to add the following to your `~/.ssh/config` to avoid
-# recording the IP addresses of the target:
+# You may want to add the following to your `~/.ssh/config` to avoid recording
+# the IP addresses of the target:
 #
 # Host nerves.local
 #   UserKnownHostsFile /dev/null
 #   StrictHostKeyChecking no
 #
-# Feel free to copy this script whereever is convenient. The template
-# is at
+# The firmware update protocol is:
+#
+# 1. Connect to the nerves_firmware_ssh service running on port 8989
+# 2. Send "fwup:$FILESIZE,reboot\n" where `$FILESIZE` is the size of the file
+#    being uploaded
+# 3. Send the firmware file
+# 4. The response from the device is a progress bar from fwup that can either
+#    be ignored or shown to the user.
+# 5. The ssh connection is closed with an exit code to indicate success or
+#    failure
+#
+# Feel free to copy this script whereever is convenient. The template is at
 # https://github.com/nerves-project/nerves_firmware_ssh/blob/master/priv/templates/script.upload.eex
 #
 
@@ -31,19 +41,38 @@ help() {
     echo "upload.sh [destination IP] [Path to .fw file]"
     echo
     echo "Default destination IP is 'nerves.local'"
-    echo "Default firmware bundle is the first .fw file in '_build/\$MIX_TARGET/\$MIX_ENV/nerves/images'"
+    echo "Default firmware bundle is the first .fw file in '_build/\${MIX_TARGET}_\${MIX_ENV}/nerves/images'"
+    echo
+    echo "MIX_TARGET=$MIX_TARGET"
+    echo "MIX_ENV=$MIX_ENV"
     exit 1
 }
 
 [ -n "$DESTINATION" ] || DESTINATION=nerves.local
 [ -n "$MIX_TARGET" ] || MIX_TARGET=rpi0
 [ -n "$MIX_ENV" ] || MIX_ENV=dev
-[ -n "$FILENAME" ] || FILENAME=$(ls ./_build/$MIX_TARGET/$MIX_ENV/nerves/images/*.fw 2> /dev/null | head -n 1)
+if [ -z "$FILENAME" ]; then
+    FIRMWARE_PATH="./_build/${MIX_TARGET}_${MIX_ENV}/nerves/images"
+    if [ ! -d "$FIRMWARE_PATH" ]; then
+        # Try the Nerves 1.4 path if the user hasn't upgraded their mix.exs
+        FIRMWARE_PATH="./_build/${MIX_TARGET}/${MIX_TARGET}_${MIX_ENV}/nerves/images"
+        if [ ! -d "$FIRMWARE_PATH" ]; then
+            # Try the pre-Nerves 1.4 path
+            FIRMWARE_PATH="./_build/${MIX_TARGET}/${MIX_ENV}/nerves/images"
+            if [ ! -d "$FIRMWARE_PATH" ]; then
+                echo "Can't find the build products. Specify path to .fw file or try running 'mix firmware'"
+                exit 1
+            fi
+        fi
+    fi
+
+    FILENAME=$(ls "$FIRMWARE_PATH/"*.fw 2> /dev/null | head -n 1)
+fi
 
 [ -n "$FILENAME" ] || (echo "Error: error determining firmware bundle."; help)
 [ -f "$FILENAME" ] || (echo "Error: can't find '$FILENAME'"; help)
 
-# Check the flavor of stat
+# Check the flavor of stat for sending the filesize
 if stat --version 2>/dev/null | grep GNU >/dev/null; then
     # The QNU way
     FILESIZE=$(stat -c%s "$FILENAME")
@@ -52,7 +81,18 @@ else
     FILESIZE=$(stat -f %z "$FILENAME")
 fi
 
-echo "Uploading $FILENAME to $DESTINATION..."
+FIRMWARE_METADATA=$(fwup -m -i "$FILENAME" || echo "meta-product=Error reading metadata!")
+FIRMWARE_PRODUCT=$(echo "$FIRMWARE_METADATA" | grep -E "^meta-product=" -m 1 2>/dev/null | cut -d '=' -f 2- | tr -d '"')
+FIRMWARE_VERSION=$(echo "$FIRMWARE_METADATA" | grep -E "^meta-version=" -m 1 2>/dev/null | cut -d '=' -f 2- | tr -d '"')
+FIRMWARE_PLATFORM=$(echo "$FIRMWARE_METADATA" | grep -E "^meta-platform=" -m 1 2>/dev/null | cut -d '=' -f 2- | tr -d '"')
+FIRMWARE_UUID=$(echo "$FIRMWARE_METADATA" | grep -E "^meta-uuid=" -m 1 2>/dev/null | cut -d '=' -f 2- | tr -d '"')
+
+echo "Path: $FILENAME"
+echo "Product: $FIRMWARE_PRODUCT $FIRMWARE_VERSION"
+echo "UUID: $FIRMWARE_UUID"
+echo "Platform: $FIRMWARE_PLATFORM"
+echo
+echo "Uploading to $DESTINATION..."
 
 # Don't fall back to asking for passwords, since that won't work
 # and it's easy to misread the message thinking that it's asking
