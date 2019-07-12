@@ -14,13 +14,15 @@ defmodule Blinkchain.Config do
   @type t :: %__MODULE__{
           canvas: Canvas.t(),
           channel0: Channel.t(),
-          channel1: Channel.t()
+          channel1: Channel.t(),
+          dma_channel: non_neg_integer()
         }
 
   defstruct [
     :canvas,
     :channel0,
-    :channel1
+    :channel1,
+    :dma_channel
   ]
 
   @doc """
@@ -52,7 +54,8 @@ defmodule Blinkchain.Config do
     %Config{
       canvas: canvas,
       channel0: channel0,
-      channel1: channel1
+      channel1: channel1,
+      dma_channel: Application.get_env(:blinkchain, :dma_channel, 5)
     }
   end
 

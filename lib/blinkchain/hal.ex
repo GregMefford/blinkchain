@@ -37,11 +37,15 @@ defmodule Blinkchain.HAL do
       |> Path.join("rpi_ws281x")
       |> String.to_charlist()
 
-    args =
-      Enum.flat_map(
-        [config.channel0, config.channel1],
-        fn ch -> ["#{ch.pin}", "#{Channel.total_count(ch)}", "#{ch.type}"] end
-      )
+    args = [
+      "#{config.dma_channel}",
+      "#{config.channel0.pin}",
+      "#{Channel.total_count(config.channel0)}",
+      "#{config.channel0.type}",
+      "#{config.channel1.pin}",
+      "#{Channel.total_count(config.channel1)}",
+      "#{config.channel1.type}"
+    ]
 
     port =
       Port.open({:spawn_executable, filename}, [

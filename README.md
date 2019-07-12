@@ -136,3 +136,19 @@ Blinkchain.render()
 
 To see more about how this code works or try it out for yourself, check out
 [the included `rainbow` example](https://github.com/GregMefford/blinkchain/tree/master/examples/rainbow).
+
+## DMA Channel Selection
+
+We have occasionally seen issues on particular combinations of hardware and
+Raspberry Pi-provided firmware versions where there is a conflict between the
+DMA channels used by Blinkchain and the ones used internally by the Raspberry
+Pi firmware. You will probably never need to change this, but in case you
+experience stability issues where the OS process is crashing, you might want to
+try changing the DMA channel to see if that helps.
+
+```elixir
+# config/config.exs
+use Mix.Config
+
+config :blinkchain, dma_channel: 5 # <= The default is 5
+```
