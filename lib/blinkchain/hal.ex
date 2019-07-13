@@ -34,7 +34,7 @@ defmodule Blinkchain.HAL do
     filename =
       :blinkchain
       |> :code.priv_dir()
-      |> Path.join("rpi_ws281x")
+      |> Path.join("blinkchain")
       |> String.to_charlist()
 
     args = [
