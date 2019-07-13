@@ -21,7 +21,10 @@ defmodule Blinkchain.Mixfile do
       ],
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test, "coveralls.circle": :test],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.circle": :test
+      ],
       docs: [
         main: "readme",
         extras: [
@@ -69,9 +72,7 @@ defmodule Blinkchain.Mixfile do
         "lib",
         "src/*.[ch]",
         "src/rpi_ws281x/*.[ch]",
-        "config",
         "mix.exs",
-        "README*",
         "LICENSE*",
         "Makefile"
       ],
