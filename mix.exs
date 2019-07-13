@@ -1,7 +1,7 @@
 defmodule Blinkchain.Mixfile do
   use Mix.Project
 
-  @version "1.0.0-rc1dev"
+  @version "1.0.0"
 
   def project do
     [
