@@ -22,10 +22,10 @@ BUILD  = $(MIX_COMPILE_PATH)/../obj
 ifeq ($(CROSSCOMPILE),)
 # Host testing build
 CFLAGS += -DDEBUG
-SRC = src/rpi_ws281x.c src/fake_ws2811.c
+SRC = src/blinkchain.c src/fake_ws2811.c
 else
 # Normal build
-SRC = src/rpi_ws281x.c src/rpi_ws281x/dma.c src/rpi_ws281x/mailbox.c \
+SRC = src/blinkchain.c src/rpi_ws281x/dma.c src/rpi_ws281x/mailbox.c \
   src/rpi_ws281x/mailbox.c src/rpi_ws281x/pwm.c src/rpi_ws281x/rpihw.c \
   src/rpi_ws281x/pcm.c src/rpi_ws281x/ws2811.c
 endif

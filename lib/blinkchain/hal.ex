@@ -62,7 +62,7 @@ defmodule Blinkchain.HAL do
 
   # This is intended to be used for testing.
   # It causes `Blinkchain.HAL` to send feedback to the registered process
-  # whenever it gets output from the rpi_ws281x Port.
+  # whenever it gets output from the `blinkchain` Port.
   # It's a call instead of a cast so that we can synchronously make sure
   # it got registered before we move on to the next step.
   def handle_call(:subscribe, {from, _ref}, state) do
@@ -123,7 +123,7 @@ defmodule Blinkchain.HAL do
   end
 
   def handle_info({_port, {:exit_status, exit_status}}, state) do
-    {:stop, "rpi_ws281x OS process died with status: #{inspect(exit_status)}", state}
+    {:stop, "blinkchain OS process died with status: #{inspect(exit_status)}", state}
   end
 
   # Private Helpers
@@ -189,9 +189,9 @@ defmodule Blinkchain.HAL do
       {^port, {:data, {_, 'OK: ' ++ response}}} -> {:ok, to_string(response)}
       {^port, {:data, {_, 'OK'}}} -> :ok
       {^port, {:data, {_, 'ERR: ' ++ response}}} -> {:error, to_string(response)}
-      {^port, {:exit_status, exit_status}} -> raise "rpi_ws281x OS process died with status: #{inspect(exit_status)}"
+      {^port, {:exit_status, exit_status}} -> raise "blinkchain OS process died with status: #{inspect(exit_status)}"
     after
-      500 -> raise "timeout waiting for rpi_ws281x OS process to reply"
+      500 -> raise "timeout waiting for blinkchain OS process to reply"
     end
   end
 
