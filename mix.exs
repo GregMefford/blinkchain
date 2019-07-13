@@ -10,8 +10,9 @@ defmodule Blinkchain.Mixfile do
       description: "Drive WS2812B \"NeoPixel\" RGB LED strips from a Raspberry Pi using Elixir.",
       elixir: "~> 1.6",
       make_clean: ["clean"],
+      make_targets: ["all"],
       compilers: [:elixir_make | Mix.compilers()],
-      build_embedded: Mix.env() == :prod,
+      build_embedded: true,
       start_permanent: Mix.env() == :prod,
       package: package(),
       aliases: [
@@ -40,7 +41,7 @@ defmodule Blinkchain.Mixfile do
     [
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
-      {:elixir_make, "~> 0.4", runtime: false},
+      {:elixir_make, "~> 0.6", runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.10", only: :test}
     ]
