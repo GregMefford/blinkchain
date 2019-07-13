@@ -51,6 +51,11 @@ $(BUILD)/%.o: src/%.c $(BUILD) $(BUILD)/rpi_ws281x
 
 $(PREFIX)/blinkchain: $(OBJ)
 	$(CC) $^ $(LDFLAGS) -o $@
+ifeq ($(CROSSCOMPILE),)
+	$(warning No cross-compiler detected. Building Blinkchain native code in test mode.)
+	$(warning If you were intending to build in normal mode e.g. directly on a Raspberry Pi,)
+	$(warning you can force it by running `CROSS_COMPILE=true mix compile`)
+endif
 
 clean:
 	rm -rf $(PREFIX)/* $(BUILD)/*
