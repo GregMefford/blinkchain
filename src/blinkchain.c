@@ -248,7 +248,7 @@ void fill(ws2811_channel_t *channels, const canvas_t *canvas) {
     reply_error("Cannot draw outside canvas dimensions");
     return;
   }
-  uint16_t row, col, offset;
+  uint16_t row, col;
   for(row = 0; row < height; row++) {
     for(col = 0; col < width; col++) {
       write_pixel(x + col, y + row, color, channels, canvas);
@@ -439,7 +439,6 @@ int main(int argc, char *argv[]) {
     } else if (strcasecmp(buffer, "print_topology") == 0) {
       debug("Called print_topology()");
       uint16_t x, y, offset;
-      char buffer[1024];
       for(y = 0; y < canvas.height; y++) {
         for(x = 0; x < canvas.width; x++) {
           offset = canvas.topology[(canvas.width * y) + x];
