@@ -27,7 +27,7 @@
 # 5. The ssh connection is closed with an exit code to indicate success or
 #    failure
 #
-# Feel free to copy this script whereever is convenient. The template is at
+# Feel free to copy this script wherever is convenient. The template is at
 # https://github.com/nerves-project/nerves_firmware_ssh/blob/master/priv/templates/script.upload.eex
 #
 
@@ -60,7 +60,22 @@ if [ -z "$FILENAME" ]; then
             # Try the pre-Nerves 1.4 path
             FIRMWARE_PATH="./_build/${MIX_TARGET}/${MIX_ENV}/nerves/images"
             if [ ! -d "$FIRMWARE_PATH" ]; then
-                echo "Can't find the build products. Specify path to .fw file or try running 'mix firmware'"
+                echo "Can't find the build products."
+                echo
+                echo "Nerves environment"
+                echo "MIX_TARGET:    ${MIX_TARGET}"
+                echo "MIX_ENV:       ${MIX_ENV}"
+                echo
+                echo "Make sure your Nerves environment is correct."
+                echo
+                echo "If the Nerves environment is correct make sure you have built the firmware"
+                echo "using 'mix firmware'."
+                echo
+                echo "If you are uploading a .fw file from a custom path you can specify the"
+                echo "path like so:"
+                echo
+                echo "  $0 <device hostname or IP address> </path/to/my/firmware.fw>"
+                echo
                 exit 1
             fi
         fi
