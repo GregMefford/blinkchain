@@ -126,7 +126,19 @@ defmodule Blinkchain do
   def fill(origin, width, height, {r, g, b, w}), do: fill(origin, width, height, %Color{r: r, g: g, b: b, w: w})
 
   @doc """
-  Copy the region of size `width` by `height` from `source` to `destination`.
+  Copy the region of size `width` by `height` from `source` to `destination`. Since Blinkchain maintains the pixels in a C port, it is more efficient to use copy/4 to shift pixels around in memory instead of calling set_pixel/2 to accomplish the same goal.
+
+  This function may be called more than once to create a looping animation.
+
+  ## Example
+    @led_count 60
+
+    def handle_info(:shift_pixels, state) do
+      Blinkchain.copy(%Point{x: @led_count, y: 0}, %Point{x: 0, y: 0}, 1, 1)
+      Blinkchain.copy(%Point{x: 0, y: 0}, %Point{x: 1, y: 0}, @led_count - 1, 1)
+      Blinkchain.render()
+      {:noreply, state}
+    end
   """
   @spec copy(point(), point(), uint16(), uint16()) ::
           :ok

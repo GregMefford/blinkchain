@@ -137,6 +137,18 @@ Blinkchain.render()
 To see more about how this code works or try it out for yourself, check out
 [the included `rainbow` example](https://github.com/GregMefford/blinkchain/tree/master/examples/rainbow).
 
+## Debugging
+
+Nerves includes the RingLogger module for viewing log data. If any Blinkchain errors are logged, they may be found using the grep/1 function from the Nerves IEX shell.
+
+For example, if no errors are logged for Blinkchain, only an `:ok` tuple will be returned.
+```iex
+iex> RingLogger.grep(~r/blinkchain/)
+:ok
+```
+
+If there is an error, the full stack trace will be returned. If the trace includes messages about the Blinkchain OS timing out, see [DMA Channel Selection](#dma-channel-selection).
+
 ## DMA Channel Selection
 
 We have occasionally seen issues on particular combinations of hardware and
@@ -145,6 +157,8 @@ DMA channels used by Blinkchain and the ones used internally by the Raspberry
 Pi firmware. You will probably never need to change this, but in case you
 experience stability issues where the OS process is crashing, you might want to
 try changing the DMA channel to see if that helps.
+
+DMA channel usage is not well-documented, so this may require some trial and error. Channels 4, 5, 8, 9, and 10 appear to be good candidates.
 
 ```elixir
 # config/config.exs
