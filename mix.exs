@@ -1,7 +1,7 @@
 defmodule Blinkchain.Mixfile do
   use Mix.Project
 
-  @version "1.0.0-rc0"
+  @version "1.0.0"
 
   def project do
     [
@@ -10,8 +10,9 @@ defmodule Blinkchain.Mixfile do
       description: "Drive WS2812B \"NeoPixel\" RGB LED strips from a Raspberry Pi using Elixir.",
       elixir: "~> 1.6",
       make_clean: ["clean"],
+      make_targets: ["all"],
       compilers: [:elixir_make | Mix.compilers()],
-      build_embedded: Mix.env() == :prod,
+      build_embedded: true,
       start_permanent: Mix.env() == :prod,
       package: package(),
       aliases: [
@@ -20,7 +21,10 @@ defmodule Blinkchain.Mixfile do
       ],
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test, "coveralls.circle": :test],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.circle": :test
+      ],
       docs: [
         main: "readme",
         extras: [
@@ -40,7 +44,7 @@ defmodule Blinkchain.Mixfile do
     [
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
-      {:elixir_make, "~> 0.4", runtime: false},
+      {:elixir_make, "~> 0.6", runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.10", only: :test}
     ]
@@ -68,9 +72,7 @@ defmodule Blinkchain.Mixfile do
         "lib",
         "src/*.[ch]",
         "src/rpi_ws281x/*.[ch]",
-        "config",
         "mix.exs",
-        "README*",
         "LICENSE*",
         "Makefile"
       ],
