@@ -6,7 +6,7 @@
 # LDFLAGS       linker flags for linking all binaries
 
 # Initialize some variables if not set
-LDFLAGS ?=
+LDFLAGS += -lm
 CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
 CC ?= $(CROSSCOMPILE)-gcc
 
