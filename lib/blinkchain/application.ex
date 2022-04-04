@@ -23,6 +23,6 @@ defmodule Blinkchain.Application do
   end
 
   def stop(_state) do
-    Logger.debug("Blinkchain Application starting")
+    Logger.debug("Blinkchain Application stopping")
   end
 end
